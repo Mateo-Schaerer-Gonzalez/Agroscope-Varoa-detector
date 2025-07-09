@@ -9,16 +9,17 @@ https://www.mdpi.com/2077-0472/15/9/969#:~:text=This%20study%20was%20designed%20
 
 ## installation and usage
 
-'''
+## Installation and Usage
+
+```bash
 git clone https://github.com/jodivaso/varrodetector.git
 cd varrodetector
 pip install -r requirements.txt
-'''
+```
 ### running the detection software only:
-This will run the detection model only. 
-'''
+```bash
 python varroa_mite_gui.py
-'''
+```
 
 
 
