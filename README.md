@@ -8,3 +8,17 @@ Giovanni Formato et al., 2023
 https://www.mdpi.com/2077-0472/15/9/969#:~:text=This%20study%20was%20designed%20to%20develop%20and%20test,images%20of%20sticky%20boards%20collected%20in%20honeybee%20colonies.
 
 ## installation and usage
+
+'''
+git clone https://github.com/jodivaso/varrodetector.git
+cd varrodetector
+pip install -r requirements.txt
+'''
+### running the detection software only:
+This will run the detection model only. 
+'''
+python varroa_mite_gui.py
+'''
+
+
+
