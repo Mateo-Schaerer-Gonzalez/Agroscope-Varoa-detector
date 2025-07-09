@@ -1,6 +1,6 @@
 # Agroscope-Varoa-detector
 This repository provides a complete pipeline for Varroa mite detection and live/dead classification, designed to support automated monitoring of honeybee colonies.
-
+## detection model used
 Detection Model:
 Mite detection is performed using the model introduced in:
 "An AI-Based Open-Source Software for Varroa Mite Fall Analysis in Honeybee Colonies"
