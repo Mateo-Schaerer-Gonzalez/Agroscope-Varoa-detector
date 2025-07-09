@@ -11,24 +11,21 @@ class Mite:
         Initialize a Mite object with YOLO bbox and image shape.
 
         Parameters:
-            yolo_bbox (tuple): (x_center, y_center, width, height) normalized [0, 1]
+            yolo_bbox (tuple): (x_center, y_center, width, height)
             image_shape (tuple): (height, width) of the image
             threshold (float): Variability threshold to classify as alive or dead
         """
-        self.bbox = self.get_bbox(yolo_bbox)
-        self.threshold = threshold
+        self.bbox = yolo_bbox
+        self.threshold = 0.5
         self.roi_series = []
         self.alive = True
 
-    def get_bbox(self,yolo_bbox):
-        x1, y1, x2, y2 = yolo_bbox
-        x, y = int(x1), int(y1)
-        w, h = int(x2 - x1), int(y2 - y1)
-        return (x, y, w, h)
+
+   
   
     def add_image(self, image):
-        x, y, w, h = self.bbox
-        roi = image[y:y+h, x:x+w]
+        x1, y1, x2, y2  = self.bbox
+        roi = image[y1:y2, x1:x2]
         self.roi_series.append(roi)
 
     def compute_variability(self, method='std'):
@@ -59,8 +56,8 @@ class Mite:
         return np.mean(variability)
 
     def isAlive(self, method='std'):
-        variability_score = self.compute_variability(method=method)
-        self.alive = variability_score > self.threshold
+        #variability_score = self.compute_variability(method=method)
+        #self.alive = variability_score > self.threshold
         return self.alive
 
 
@@ -68,15 +65,14 @@ class Mite:
 # get mites from bbox text files per image
 def get_mites_from_bboxes(result):
     mites = []
-    boxes = result.boxes.xyxy.cpu().numpy()  # numpy array
-
+    boxes = result.boxes.xyxy.cpu().numpy().astype(int)  # numpy array
     for box in boxes:
         mites.append(Mite(box))
     
     return mites
 
 
-def draw_mite_boxes(image_path, mites, color=(0, 255, 0), thickness=2, show=True, save_path=None):
+def draw_mite_boxes(image, mites, thickness=2, show=True, save_path=None):
     """
     Draw bounding boxes of mites on the image.
 
@@ -91,22 +87,17 @@ def draw_mite_boxes(image_path, mites, color=(0, 255, 0), thickness=2, show=True
     Returns:
         image_with_boxes: The image with bounding boxes drawn.
     """
-    image = cv2.imread(image_path)
-    if image is None:
-        raise FileNotFoundError(f"Image not found: {image_path}")
 
     for mite in mites:
-        x, y, w, h = mite.bbox
-        top_left = (x, y)
-        bottom_right = (x + w, y + h)
-        cv2.rectangle(image, top_left, bottom_right, color, thickness)
+        x1, y1, x2, y2 = mite.bbox
+        if mite.isAlive():
+            color = (0, 255, 0)
+        else:
+            color = (0, 0, 255)
+       
+        cv2.rectangle(image, (x1,y1), (x2,y2), color, thickness)
 
     if save_path:
         cv2.imwrite(save_path, image)
-
-    if show:
-        cv2.imshow("Mites with Boxes", image)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
 
     return image
