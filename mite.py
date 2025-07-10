@@ -3,71 +3,64 @@ import cv2
 import skimage
 import os
 import cv2
+from sklearn.cluster import DBSCAN
 
 
 class Mite:
-    def __init__(self, yolo_bbox, threshold=5.0):
+    def __init__(self, yolo_bbox, frames, threshold=5.0):
         """
         Initialize a Mite object with YOLO bbox and image shape.
 
-        Parameters:
+        Parameters:pi
             yolo_bbox (tuple): (x_center, y_center, width, height)
             image_shape (tuple): (height, width) of the image
+            frames (np.ndarray): A 4D tensor of shape (num_frames, H, W, C)
             threshold (float): Variability threshold to classify as alive or dead
         """
         self.bbox = yolo_bbox
+        self.center = ((yolo_bbox[0] + yolo_bbox[2]) // 2, (yolo_bbox[1] + yolo_bbox[3]) // 2)  # (x_center, y_center)
         self.threshold = 0.5
-        self.roi_series = []
-        self.alive = True
+        self.roi_series = self.add_ROI(frames)
+        self.variability = None
 
 
    
   
-    def add_image(self, image):
-        x1, y1, x2, y2  = self.bbox
-        roi = image[y1:y2, x1:x2]
-        self.roi_series.append(roi)
+    def add_ROI(self, frames):
+        """
+        Extract ROI from all frames and append to self.roi_series.
+        
+        Parameters:
+            frames (np.ndarray): A 4D tensor of shape (num_frames, H, W, C)
+        """
+        x1, y1, x2, y2 = self.bbox  # Bounding box coordinates
+        roi = frames[:, y1:y2, x1:x2, :]  # Slice all frames with the bbox
+        return roi
+       
 
     def compute_variability(self, method='std'):
-        if not self.roi_series:
-            return None
+        
+        if self.roi_series is None:
+            raise ValueError("ROI series is not set. Call add_ROI() first.")
 
-        stack = np.stack(self.roi_series, axis=0)
+        # Convert to grayscale if needed
+        roi_gray = np.mean(self.roi_series, axis=-1)  # Average across color channels
 
-        if stack.ndim == 4:  # Color images
-            stack_gray = np.mean(stack, axis=-1)
-        else:
-            stack_gray = stack
-
-        if method == 'std':
-            variability = np.std(stack_gray, axis=0)
-        elif method == 'var':
-            variability = np.var(stack_gray, axis=0)
-        elif method == 'entropy':
-            from skimage.measure import shannon_entropy
-            variability = np.array([
-                shannon_entropy(stack_gray[:, i, j])
-                for i in range(stack_gray.shape[1])
-                for j in range(stack_gray.shape[2])
-            ]).reshape(stack_gray.shape[1:])
-        else:
-            raise ValueError("Unsupported method")
-
-        return np.mean(variability)
+        return np.var(roi_gray, axis=0).mean() #pixel variace across frames
 
     def isAlive(self, method='std'):
-        #variability_score = self.compute_variability(method=method)
-        #self.alive = variability_score > self.threshold
+        self.variability = self.compute_variability(method=method)
+        self.alive = self.variability > self.threshold #above threshold is alive, below is dead
         return self.alive
 
 
 
 # get mites from bbox text files per image
-def get_mites_from_bboxes(result):
+def get_mites_from_bboxes(result, frames):
     mites = []
     boxes = result.boxes.xyxy.cpu().numpy().astype(int)  # numpy array
     for box in boxes:
-        mites.append(Mite(box))
+        mites.append(Mite(box, frames))
     
     return mites
 

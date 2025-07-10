@@ -12,9 +12,9 @@ class Detector:
         # Run the model on a single image
         result = self.model(
             image,
-            imgsz=6016, #was 6012
+            imgsz=6016, 
             max_det=2000,
-            conf=0.7,
+            conf=0.6,
             iou=0.5,
             save=False,
             show_labels=False,
