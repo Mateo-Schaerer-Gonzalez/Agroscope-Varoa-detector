@@ -27,3 +27,20 @@ class Detector:
         )
 
         self.result = result[0] # only for one image
+
+
+#load detector and fine tune it:
+detector = Detector()
+
+# Load a pretrained model (or your existing one)
+model = YOLO("varrodetector/model/weights/best.pt")  # or 'varrodetector/model/weights/best.pt' if you want to continue training
+
+# Train (fine-tune) on your dataset
+model.train(
+    data="data.yaml",  # path to your dataset YAML
+    epochs=50,
+    imgsz=6016,
+    batch=8,
+    name="fine_tuned_varro_model",
+    resume=False  # True if you're continuing from a checkpoint
+)

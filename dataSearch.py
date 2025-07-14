@@ -4,7 +4,7 @@ import shutil
 
 
 destination_folder = "Data"
-
+"""
 source_root = "D:\DataVaroaMateo/"  # Change this to your source directory
 # Walk through all subdirectories
 for root, dirs, files in os.walk(source_root):
@@ -27,3 +27,5 @@ for root, dirs, files in os.walk(source_root):
                 print(f"✔ Copied: {src_path} → {dst_path}")
             else:
                 print(f"⚠ No images in: {folder_path}")
+"""
+print(f"Current number of images in '{destination_folder}': {len(os.listdir(destination_folder))}")
