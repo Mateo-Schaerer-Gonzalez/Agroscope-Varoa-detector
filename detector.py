@@ -27,6 +27,8 @@ class Detector:
 
         self.result = result[0] # only for one image
 
+    
+
 
 
 # Train (fine-tune) on your dataset
@@ -53,3 +55,5 @@ if __name__ == '__main__':
             name="fine_tuned_varro_model",
             resume=False  # True if you're continuing from a checkpoint
         )
+
+

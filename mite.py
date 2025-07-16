@@ -1,7 +1,7 @@
 import numpy as np
 import cv2
 import cv2
-
+from Rect import Rect
 
 class Mite:
     def __init__(self, yolo_bbox, frames, threshold=5.0):
@@ -14,11 +14,13 @@ class Mite:
             frames (np.ndarray): A 4D tensor of shape (num_frames, H, W, C)
             threshold (float): Variability threshold to classify as alive or dead
         """
-        self.bbox = yolo_bbox
+        self.bbox = Rect(*yolo_bbox)  # Create a Rect object for the bounding box
         self.center = ((yolo_bbox[0] + yolo_bbox[2]) // 2, (yolo_bbox[1] + yolo_bbox[3]) // 2)  # (x_center, y_center)
         self.threshold = 0.5
-        self.roi_series = self.add_ROI(frames)
+        self.roi_series = self.bbox.get_ROI(frames)
         self.variability = None
+        self.assigned_rect = None
+        self.alive = True
 
 
    
@@ -35,7 +37,7 @@ class Mite:
         return roi
        
 
-    def compute_variability(self, method='std'):
+    def checkAlive(self):
         
         if self.roi_series is None:
             raise ValueError("ROI series is not set. Call add_ROI() first.")
@@ -43,51 +45,18 @@ class Mite:
         # Convert to grayscale if needed
         roi_gray = np.mean(self.roi_series, axis=-1)  # Average across color channels
 
-        return np.var(roi_gray, axis=0).mean() #pixel variace across frames
+        self.variability = np.var(roi_gray, axis=0).mean()
 
-    def isAlive(self, method='std'):
-        self.variability = self.compute_variability(method=method)
+
+        # update alive status based on variability
         self.alive = self.variability > self.threshold #above threshold is alive, below is dead
-        return self.alive
+        self.bbox.color = (0, 255, 0) if self.alive else (0, 0, 255)
 
-
-
-# get mites from bbox text files per image
-def get_mites_from_bboxes(result, frames):
-    mites = []
-    boxes = result.boxes.xyxy.cpu().numpy().astype(int)  # numpy array
-    for box in boxes:
-        mites.append(Mite(box, frames))
+        return self.alive, np.var(roi_gray, axis=0).mean() #pixel variace across frames
     
-    return mites
+    def draw(self, image, thickness=2, label=None):
+        """
+        Draw this mite's bounding box on the given image.
+        """
+        self.bbox.draw(image, thickness=thickness, label=label)
 
-
-def draw_mite_boxes(image, mites, thickness=2, show=True, save_path=None):
-    """
-    Draw bounding boxes of mites on the image.
-
-    Parameters:
-        image_path (str): Path to the input image.
-        mites (list of Mite): List of Mite objects with .bbox attribute (x, y, w, h).
-        color (tuple): Box color in BGR (default green).
-        thickness (int): Box line thickness.
-        show (bool): Whether to display the image with cv2.imshow.
-        save_path (str or None): If provided, saves the image to this path.
-
-    Returns:
-        image_with_boxes: The image with bounding boxes drawn.
-    """
-
-    for mite in mites:
-        x1, y1, x2, y2 = mite.bbox
-        if mite.isAlive():
-            color = (0, 255, 0)
-        else:
-            color = (0, 0, 255)
-       
-        cv2.rectangle(image, (x1,y1), (x2,y2), color, thickness)
-
-    if save_path:
-        cv2.imwrite(save_path, image)
-
-    return image

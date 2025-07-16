@@ -1,6 +1,7 @@
 from detector import Detector
-from mite import  get_mites_from_bboxes, draw_mite_boxes
-from tools import get_frames  #, preprocess_frames
+from tools import get_frames, convert_yolo_to_coords  #, preprocess_frames
+from MiteManager import MiteManager
+
 
 
 #get images from usb folder:
@@ -11,27 +12,40 @@ def predict(folder_path):
     #get the image as np array from the folder path
     frames = get_frames(usb_image_folder)
 
-    #pre process the frames:
     #processed_frames = preprocess_frames(frames)  # Assuming preprocessing is done in get_frames    
-
     detector = Detector()
 
    
     # get the bounding boxes from the first frame:
-    detector.run_detection(frames[0]) 
-
+    detector.run_detection(frames[1]) 
 
     # get the mites from the image:
-    mites = get_mites_from_bboxes(detector.result, frames)
-    print("got mites:", len(mites))
+    stage = MiteManager()
+    stage.getMites(detector.result, frames)
+    stage.get_zones("coords.txt")
 
+
+
+    stage.print_mite_variability()
+
+    stage.assign_mites()  # Assign mites to zones
+
+    stage.draw_mites(frames[1], thickness=2, save_path="output.jpg", draw_zones=True)
+
+
+    for zone in stage.zones:
+
+
+  
  
 
-    draw_mite_boxes(frames[0], mites, thickness=2, show=False, save_path="output.jpg")
-
-    for mites in mites:
-        print("Mite variability:", mites.variability)
+    # draw_mite_boxes(frames[0], mites, thickness=2, show=False, save_path="output.jpg")
     
+predict(usb_image_folder)
 
+# get coordinats from file
 
-predict(folder_path="Sample images/")
+"""convert_yolo_to_coords(image_path=r"Data\4_0_2021-8-20_19-5-34-922.bmp",
+                     input_file="yolo_label.txt", 
+                     output_file="coords.txt")
+"""
