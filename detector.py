@@ -3,7 +3,7 @@ from ultralytics import YOLO
 class Detector:
     def __init__(self):
         self.model_path = "runs/detect/fine_tuned_varro_model12/weights/best.pt"  # Path to your fine-tuned model
-        #self.model_path = "varrodetector/model/weights/best.pt"  
+        #self.model_path = "best.pt"  # pretrained model without fine-tuning
         self.model = YOLO(self.model_path, verbose=False)
         self.result = None
 

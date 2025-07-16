@@ -8,7 +8,7 @@ def get_frames(folder_path):
 
     for fname in os.listdir(folder_path):
         img_path = os.path.join(folder_path, fname)
-        print("Processing:", img_path)
+        #print("Processing:", img_path)
 
         # Skip if it's a directory
         if os.path.isdir(img_path):
