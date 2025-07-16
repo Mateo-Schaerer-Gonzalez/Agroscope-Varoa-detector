@@ -1,6 +1,6 @@
 from detector import Detector
 from mite import  get_mites_from_bboxes, draw_mite_boxes
-from tools import get_frames, preprocess_frames
+from tools import get_frames  #, preprocess_frames
 
 
 #get images from usb folder:
@@ -12,13 +12,13 @@ def predict(folder_path):
     frames = get_frames(usb_image_folder)
 
     #pre process the frames:
-    processed_frames = preprocess_frames(frames)  # Assuming preprocessing is done in get_frames    
+    #processed_frames = preprocess_frames(frames)  # Assuming preprocessing is done in get_frames    
 
     detector = Detector()
 
    
     # get the bounding boxes from the first frame:
-    detector.run_detection(processed_frames[0]) 
+    detector.run_detection(frames[0]) 
 
 
     # get the mites from the image:
