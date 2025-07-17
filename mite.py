@@ -22,19 +22,6 @@ class Mite:
         self.assigned_rect = None
         self.alive = True
 
-
-   
-  
-    def add_ROI(self, frames):
-        """
-        Extract ROI from all frames and append to self.roi_series.
-        
-        Parameters:
-            frames (np.ndarray): A 4D tensor of shape (num_frames, H, W, C)
-        """
-        x1, y1, x2, y2 = self.bbox  # Bounding box coordinates
-        roi = frames[:, y1:y2, x1:x2, :]  # Slice all frames with the bbox
-        return roi
        
 
     def checkAlive(self):

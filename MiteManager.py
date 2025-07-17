@@ -1,30 +1,34 @@
 import cv2
 from mite import Mite
 from Rect import TextZone, MiteZone
+from TextReader import TextReader
+from PIL import Image
+from TextReader import has_text
 
 class MiteManager:
-    def __init__(self):
+    def __init__(self, coordinate_file, mites_detection, frames):
         self.mites = []
         self.zones = []
+        self.frames = frames
         self.zone_map = {
             1: "mite_zone",
             0: "text_zone"
         }
+        self.get_zones(coordinate_file) # get the zones from the coordinate file
+        self.getMites(mites_detection, self.frames, self.zones)  # get the mites from the detection results and frames
 
-    def draw_mites(self, image, thickness=2, save_path=None, draw_zones=False):
-        for mite in self.mites:
-            mite.draw(image, thickness=thickness)
-       
+    def draw(self, image, thickness=2, save_path=None, draw_zones=False):
+        for zone in self.zones:
+            zone.draw(image, thickness=thickness)
 
-        if draw_zones:
-            for zone in self.zones:
-                zone.draw(image, thickness=thickness)
-
-        if save_path:
+        if save_path is not None:
             cv2.imwrite(save_path, image)
            
 
     def get_zones(self, coordinate_file):
+        textReader = TextReader() #load the text reader
+        print("textReader loaded...")
+
         with open(coordinate_file, 'r') as f:
             for line in f:
                 parts = line.strip().split()
@@ -45,13 +49,20 @@ class MiteManager:
                     for miteZone in self.zones:
                         if textZone in miteZone:
                             textZone.parent_rect = miteZone
+                            img = textZone.get_ROI(self.frames)[2]
+                            if has_text(img):
+                                img_PIL = Image.fromarray(img).convert("RGB")  # Get the image from the ROI
+                                textZone.text = textReader.read(img_PIL)
+                            else:
+                                textZone.text = "No mites in this zone"
+
                             miteZone.add_text_zone(textZone)
                             break
 
                
 
 
-    def getMites(self, result, frames):
+    def getMites(self, result, frames, zones):
         """
         Extract mites from detection results and frames.
         
@@ -62,27 +73,30 @@ class MiteManager:
         Returns:
             List of Mite objects.
         """
+        assigned = 0
         
         boxes = result.boxes.xyxy.cpu().numpy().astype(int)  # numpy array
-        for box in boxes:
-            self.mites.append(Mite(box, frames))
-        
-        print("got mites:", len(self.mites))
+       
+        worked = False
+        for i, box in enumerate(boxes):
+            mite = Mite(box, frames)
+            
+            for zone in zones:
+                if mite.bbox in zone:
+                    worked = zone.assign_mites(mite)
+                    break
+            if worked:
+                assigned += 1
+                worked = False
+     
+        print("got mites:", len(boxes))
+        print("assigned mites:", assigned)
 
     def print_mite_variability(self):
-        for mite in self.mites:
-            print("Mite alive, variability:", mite.checkAlive())
-
-
-    def assign_mites(self):
-        """
-        Assigns mites to rectangles based on their bounding boxes.
-        
-        Parameters:
-            rectangles (list of Rect): List of Rect objects to assign mites to.
-        """
-        
         for zone in self.zones:
-            zone.assign_mites(self.mites)
-
-                #update mite colors based on their assigned rectangle
+            print(f"Zone {zone.zone_id} has {len(zone.mites)} mites.")
+            
+            """for mite in zone.mites:
+                print(f"  Mite {mite.bbox} has variability: {mite.checkAlive()}")"""
+                
+         

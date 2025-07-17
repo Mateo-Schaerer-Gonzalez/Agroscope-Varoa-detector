@@ -15,31 +15,21 @@ def predict(folder_path):
     #processed_frames = preprocess_frames(frames)  # Assuming preprocessing is done in get_frames    
     detector = Detector()
 
-   
     # get the bounding boxes from the first frame:
-    detector.run_detection(frames[1]) 
+    detector.run_detection(frames[2]) 
 
     # get the mites from the image:
-    stage = MiteManager()
-    stage.getMites(detector.result, frames)
-    stage.get_zones("coords.txt")
-
+    stage = MiteManager(coordinate_file="coords.txt",
+                        mites_detection=detector.result, 
+                        frames=frames)
+   
 
 
     stage.print_mite_variability()
 
-    stage.assign_mites()  # Assign mites to zones
-
-    stage.draw_mites(frames[1], thickness=2, save_path="output.jpg", draw_zones=True)
+    stage.draw(frames[2], thickness=2, save_path="output.jpg", draw_zones=True)
 
 
-    for zone in stage.zones:
-
-
-  
- 
-
-    # draw_mite_boxes(frames[0], mites, thickness=2, show=False, save_path="output.jpg")
     
 predict(usb_image_folder)
 
