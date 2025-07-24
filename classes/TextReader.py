@@ -20,7 +20,11 @@ class TextReader:
         # Check for GPU availability
 
         pixel_values = self.processor(image, return_tensors="pt").pixel_values.to(self.device)
-        generated_ids = self.model.generate(pixel_values, max_new_tokens=1000)
+        generated_ids = self.model.generate(pixel_values, 
+                                            max_new_tokens=30,
+                                            num_beams=5,
+                                            early_stopping=True,
+                                            no_repeat_ngram_size=2)
         generated_text = self.processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
         print(generated_text)
         return generated_text.strip()
