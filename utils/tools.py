@@ -5,8 +5,13 @@ import numpy as np
 
 def get_frames(folder_path, discobox_run=True):
     frames = []
+    
     if discobox_run:
-        folder_path = "../"+folder_path
+        # Resolve folder path relative to this script’s location
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        folder_path = os.path.abspath(os.path.join(base_dir, "..", folder_path))
+    else:
+        folder_path = os.path.abspath(folder_path)
     
     for root, _, files in os.walk(folder_path):
         print(f"root folder", root)
