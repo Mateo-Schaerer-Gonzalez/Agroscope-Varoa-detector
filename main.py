@@ -4,16 +4,9 @@ from classes.MiteManager import MiteManager
 
 
 
-#get images from usb folder:
-usb_image_folder = "Datasets/Data"
 
 
-num_per_plate = 1 # assays per plate
-name = "test2"
-
-
-
-def predict(folder_path):
+def predict(folder_path, name, num_per_plate):
     #get the image as np array from the folder path
     frames = get_frames(usb_image_folder)
 
@@ -39,11 +32,4 @@ def predict(folder_path):
 
 
     
-predict(usb_image_folder)
-
-# get coordinats from file
-
-"""convert_yolo_to_coords(image_path=r"Data\4_0_2021-8-20_19-5-34-922.bmp",
-                     input_file="yolo_label.txt", 
-                     output_file="coords.txt")
-"""
+#predict(usb_image_folder)
