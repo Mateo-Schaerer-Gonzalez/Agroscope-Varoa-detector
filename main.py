@@ -1,9 +1,14 @@
+import sys
+import os
+# Ensure root of the project is in Python path
+PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
+
+
 from classes.detector import Detector
 from utils.tools import get_frames, convert_yolo_to_coords  #, preprocess_frames
 from classes.MiteManager import MiteManager
-
-
-
 
 
 def predict(folder_path, name, num_per_plate):
