@@ -12,6 +12,7 @@ from classes.MiteManager import MiteManager
 
 
 def predict(folder_path, name, num_per_plate):
+    print("getting frames")
     #get the image as np array from the folder path
     frames = get_frames(folder_path)
 
@@ -39,4 +40,4 @@ def predict(folder_path, name, num_per_plate):
 
 
     
-#predict(usb_image_folder)
+predict("Datasets/Data/","test", 2)

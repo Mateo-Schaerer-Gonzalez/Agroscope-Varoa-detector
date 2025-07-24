@@ -6,25 +6,23 @@ import numpy as np
 def get_frames(folder_path):
     frames = []
 
-    for fname in os.listdir(folder_path):
-        img_path = os.path.join(folder_path, fname)
-        #print("Processing:", img_path)
+    for root, _, files in os.walk(folder_path):
+        for fname in files:
+            if not fname.lower().endswith(".bmp"):
+                continue  # skip non-BMP files
 
-        # Skip if it's a directory
-        if os.path.isdir(img_path):
-            print(f"Skipped directory: {fname}")
-            continue
+            img_path = os.path.join(root, fname)
 
-        img = cv2.imread(img_path)
-        if img is None:
-            print(f"Skipped (not image or unreadable): {fname}")
-            continue
+            img = cv2.imread(img_path)
+            if img is None:
+                print(f"Skipped (not image or unreadable): {fname}")
+                continue
 
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        frames.append(img)
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            frames.append(img)
 
-    if len(frames) == 0:
-        raise ValueError("No images found in folder or none could be loaded.")
+        if len(frames) == 0:
+            raise ValueError("No images found in folder or none could be loaded.")
 
     return np.stack(frames)
 
