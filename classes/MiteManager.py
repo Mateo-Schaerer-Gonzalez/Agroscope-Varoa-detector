@@ -135,6 +135,7 @@ class MiteManager:
         filename = f"{self.output_path}/"+f"{self.name}_summary.xlsx"
         image_path = f"{self.output_path}/"+f"{self.name}.jpg"
         hist_path = f"{self.output_path}/"+f"{self.name}_variability_histogram.png"
+        survival_path =  f"{self.output_path}/"+f"{self.name}_survival_path.png"
 
 
         print("filename: ",filename)
@@ -207,7 +208,7 @@ class MiteManager:
 
         # alive % by zone 
          
-        alive_plot_path = f"outputs/{self.name}_alive_percent.png"
+        
 
         zone_labels = [row["Zone ID"] for row in summary_data]
         alive_percentages = [row["Survival %"] for row in summary_data]
@@ -220,21 +221,22 @@ class MiteManager:
         plt.ylim(0, 100)
         plt.xticks(rotation=45, ha="right")
         plt.tight_layout()
-        plt.savefig(alive_plot_path)
+        plt.savefig(survival_path)
         plt.close()
 
         # Insert bar chart into Excel
         try:
-            alive_img = OpenpyxlImage(alive_plot_path)
+            alive_img = OpenpyxlImage(survival_path)
             alive_img.width = alive_img.width * 0.7
             alive_img.height = alive_img.height * 0.7
             alive_img.anchor = "w21"  
             ws.add_image(alive_img)
         except FileNotFoundError:
-            print(f"Alive % chart not found at {alive_plot_path}, skipping.")
+            print(f"Alive % chart not found at {survival_path}, skipping.")
 
         # Final save
         wb.save(filename)
+        print("summary completed sucessfully ...")
 
 
 
