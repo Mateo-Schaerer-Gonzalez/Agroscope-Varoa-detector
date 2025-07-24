@@ -8,9 +8,21 @@ import pandas as pd
 from openpyxl import load_workbook
 from openpyxl.drawing.image import Image as OpenpyxlImage
 import matplotlib.pyplot as plt
+import os
 
 class MiteManager:
     def __init__(self, coordinate_file, mites_detection, frames,  name):
+
+        if not os.path.isabs(coordinate_file):
+            coordinate_file = os.path.abspath(
+                os.path.join(
+                    os.path.dirname(__file__),
+                    "..",
+                    coordinate_file  # assuming relative path is relative to the folder above this script
+                )
+            )
+
+        self.coordinate_file = coordinate_file
         self.zones = []
         self.name = name
         self.frames = frames

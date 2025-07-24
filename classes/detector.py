@@ -4,7 +4,7 @@ import os
 
 class Detector:
     def __init__(self):
-        self.model_path = model_path = os.path.join(
+        self.model_path = os.path.join(
             os.path.dirname(__file__),
             "..",
             "model_weights",
