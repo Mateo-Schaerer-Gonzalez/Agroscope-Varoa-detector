@@ -20,7 +20,7 @@ def get_frames(folder_path, discobox_run=True):
     else:
         folder_path = os.path.abspath(folder_path)
     
-    for root, dirs, files in os.walk(folder_path):
+    for root, dirs, files in os.walk(folder_path,  followlinks=True):
         print(f"Checking directory: {root}")
         print(f"Subdirectories here: {dirs}")
         for fname in files:
