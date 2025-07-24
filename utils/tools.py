@@ -9,7 +9,7 @@ def get_frames(folder_path, discobox_run=True):
     if discobox_run:
         # Resolve folder path relative to this script’s location
         base_dir = os.path.dirname(os.path.abspath(__file__))
-        folder_path = os.path.abspath(os.path.join(base_dir, "..", folder_path))
+        folder_path = os.path.abspath(os.path.join(base_dir, "..",  "..", folder_path))
     else:
         folder_path = os.path.abspath(folder_path)
     

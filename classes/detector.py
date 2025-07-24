@@ -35,7 +35,7 @@ class Detector:
             verbose=False,
             batch=1,
             exist_ok=True,
-            device="cuda" 
+            #device="cuda"   #uncomment if you have gpu
         )
 
         self.result = result[0] # only for one image
