@@ -22,7 +22,7 @@ def predict(folder_path, name, num_per_plate):
     detector = Detector()
 
     # get the bounding boxes from the first frame:
-    detector.run_detection(frames[5]) 
+    detector.run_detection(frames[0]) 
 
     # get the mites from the image:
     stage = MiteManager(coordinate_file=f"Zoning/coordinates{num_per_plate}.txt",
@@ -34,6 +34,6 @@ def predict(folder_path, name, num_per_plate):
 
     stage.mite_variability()
 
-    stage.draw(frames[5], thickness=2, draw_zones=True)
+    stage.draw(frames[0], thickness=2, draw_zones=True)
 
     stage.Excelsummary()

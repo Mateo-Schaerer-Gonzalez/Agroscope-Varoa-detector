@@ -54,7 +54,7 @@ class MiteManager:
                     for miteZone in self.zones:
                         if textZone in miteZone:
                             textZone.parent_rect = miteZone
-                            img = textZone.get_ROI(self.frames)[5]
+                            img = textZone.get_ROI(self.frames)[0]
                             if has_text(img):
                                 img_PIL = Image.fromarray(img).convert("RGB")  # Get the image from the ROI
                                 textZone.text = textReader.read(img_PIL)
