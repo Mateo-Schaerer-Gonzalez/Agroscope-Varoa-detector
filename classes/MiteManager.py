@@ -22,7 +22,9 @@ class MiteManager:
                 )
             )
 
-        
+        # get the output path
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        self.output_path = os.path.abspath(os.path.join(base_dir, "..",  "..", output_folder))
 
 
         self.coordinate_file = coordinate_file
@@ -123,10 +125,14 @@ class MiteManager:
 
 
     def Excelsummary(self):
-        filename = f"outputs/{self.name}_summary.xlsx"
-        image_path = f"outputs/{self.name}.jpg"
-        hist_path = f"outputs/{self.name}_variability_histogram.png"
+        filename = f"{self.output_path}/"+f"{self.name}_summary.xlsx"
+        image_path = f"{self.output_path}/"+f"{self.name}.jpg"
+        hist_path = f"{self.output_path}/"+f"{self.name}_variability_histogram.png"
 
+
+        print("filename: ",filename)
+        print("image_path: ", image_path)
+        print("hist_path: ", hist_path)
         # Step 1: Prepare the data
         summary_data = []
         all_variabilities = []
