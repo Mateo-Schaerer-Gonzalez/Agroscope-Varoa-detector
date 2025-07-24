@@ -1,10 +1,21 @@
 from ultralytics import YOLO
+import os
 #import torch
 
 class Detector:
     def __init__(self):
-        self.model_path = "../model_weights/runs/detect/fine_tuned_varro_model/weights/best.pt"  # Path to your fine-tuned model
-        #self.model_path = "best.pt"  # pretrained model without fine-tuning
+        self.model_path = model_path = os.path.join(
+            os.path.dirname(__file__),
+            "..",
+            "model_weights",
+            "runs",
+            "detect",
+            "fine_tuned_varro_model",
+            "weights",
+            "best.pt"
+        )  # Path to your fine-tuned model
+
+        
         self.model = YOLO(self.model_path, verbose=False)
         self.result = None
 
