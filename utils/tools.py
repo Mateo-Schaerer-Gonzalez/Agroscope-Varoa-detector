@@ -10,6 +10,13 @@ def get_frames(folder_path, discobox_run=True):
         # Resolve folder path relative to this script’s location
         base_dir = os.path.dirname(os.path.abspath(__file__))
         folder_path = os.path.abspath(os.path.join(base_dir, "..",  "..", folder_path))
+
+
+        print("Resolved folder path:", folder_path)
+        print("Folder exists?", os.path.exists(folder_path))
+        print("Is a directory?", os.path.isdir(folder_path))
+        print("Contents:", os.listdir(folder_path))
+
     else:
         folder_path = os.path.abspath(folder_path)
     
