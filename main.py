@@ -13,10 +13,6 @@ from classes.MiteManager import MiteManager
 
 def predict(folder_path, name, num_per_plate):
     print("getting frames")
-    #get the image as np array from the folder path
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    folder_path = os.path.abspath(os.path.join(base_dir, "..",  "..", folder_path))
-
 
     frames = get_frames(folder_path)
 
