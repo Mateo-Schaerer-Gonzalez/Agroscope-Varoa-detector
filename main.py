@@ -13,7 +13,9 @@ from classes.MiteManager import MiteManager
 
 def predict(folder_path, name, num_per_plate):
     #get the image as np array from the folder path
-    frames = get_frames(usb_image_folder)
+    frames = get_frames(folder_path)
+
+    print("got frames")
 
     #processed_frames = preprocess_frames(frames)  # Assuming preprocessing is done in get_frames    
     detector = Detector()
