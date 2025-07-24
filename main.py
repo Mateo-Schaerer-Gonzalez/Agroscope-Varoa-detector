@@ -37,7 +37,3 @@ def predict(folder_path, name, num_per_plate):
     stage.draw(frames[5], thickness=2, draw_zones=True)
 
     stage.Excelsummary()
-
-
-    
-predict("Datasets/Data/","test", 2)
