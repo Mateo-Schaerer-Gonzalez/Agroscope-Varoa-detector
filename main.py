@@ -1,11 +1,16 @@
-from detector import Detector
-from tools import get_frames, convert_yolo_to_coords  #, preprocess_frames
-from MiteManager import MiteManager
+from classes.detector import Detector
+from utils.tools import get_frames, convert_yolo_to_coords  #, preprocess_frames
+from classes.MiteManager import MiteManager
 
 
 
 #get images from usb folder:
-usb_image_folder = "Data"  # Change this to your USB absolute path
+usb_image_folder = "Datasets/Data"
+
+
+num_per_plate = 1 # assays per plate
+name = "test2"
+
 
 
 def predict(folder_path):
@@ -16,18 +21,21 @@ def predict(folder_path):
     detector = Detector()
 
     # get the bounding boxes from the first frame:
-    detector.run_detection(frames[2]) 
+    detector.run_detection(frames[5]) 
 
     # get the mites from the image:
-    stage = MiteManager(coordinate_file="coords.txt",
+    stage = MiteManager(coordinate_file=f"Zoning/coordinates{num_per_plate}.txt",
                         mites_detection=detector.result, 
-                        frames=frames)
+                        frames=frames,
+                        name = name)
    
 
 
-    stage.print_mite_variability()
+    stage.mite_variability()
 
-    stage.draw(frames[2], thickness=2, save_path="output.jpg", draw_zones=True)
+    stage.draw(frames[5], thickness=2, draw_zones=True)
+
+    stage.Excelsummary()
 
 
     
