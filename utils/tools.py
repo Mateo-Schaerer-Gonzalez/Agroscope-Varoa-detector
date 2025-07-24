@@ -7,7 +7,9 @@ def get_frames(folder_path):
     frames = []
 
     for root, _, files in os.walk(folder_path):
+        print(f"root folder", root)
         for fname in files:
+            print(fname)
             if not fname.lower().endswith(".bmp"):
                 continue  # skip non-BMP files
 
