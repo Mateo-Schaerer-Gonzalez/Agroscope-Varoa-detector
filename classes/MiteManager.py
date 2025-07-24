@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import os
 
 class MiteManager:
-    def __init__(self, coordinate_file, mites_detection, frames,  name):
+    def __init__(self, coordinate_file, mites_detection, frames,  name, output_folder):
 
         if not os.path.isabs(coordinate_file):
             coordinate_file = os.path.abspath(
@@ -21,6 +21,9 @@ class MiteManager:
                     coordinate_file  # assuming relative path is relative to the folder above this script
                 )
             )
+
+        
+
 
         self.coordinate_file = coordinate_file
         self.zones = []
