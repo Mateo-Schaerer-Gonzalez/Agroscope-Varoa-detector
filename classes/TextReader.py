@@ -4,7 +4,7 @@ import numpy as np
 import cv2
 
 class TextReader:
-    def __init__(self, model_name="microsoft/trocr-large-handwritten", device=None):
+    def __init__(self, model_name="microsoft/trocr-small-handwritten", device=None):
         self.processor = TrOCRProcessor.from_pretrained(model_name)
         self.model = VisionEncoderDecoderModel.from_pretrained(model_name)
         self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
