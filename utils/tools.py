@@ -23,9 +23,10 @@ def get_frames(folder_path, discobox_run=True):
     for root, dirs, files in os.walk(folder_path,  followlinks=True):
         print(f"Checking directory: {root}")
         print(f"Subdirectories here: {dirs}")
-        for fname in files:
-            if not fname.lower().endswith(".bmp"):
-                continue  # skip non-BMP files
+        for dir in dirs:
+           #print content
+            print(f"in {dir}", os.listdir(dir))
+
 
             img_path = os.path.join(root, fname)
 
