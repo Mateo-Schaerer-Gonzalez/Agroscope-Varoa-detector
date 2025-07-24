@@ -8,9 +8,10 @@ import pandas as pd
 from openpyxl import load_workbook
 from openpyxl.drawing.image import Image as OpenpyxlImage
 
-
 import matplotlib
-matplotlib.use('Agg') 
+matplotlib.use('Agg')  # Must be set before importing pyplot
+
+
 
 import matplotlib.pyplot as plt
 import os
@@ -44,12 +45,13 @@ class MiteManager:
         self.getMites(mites_detection, self.frames, self.zones)  # get the mites from the detection results and frames
 
     def draw(self, image, thickness=2, draw_zones=False):
-        save_path = f"outputs/{self.name}.jpg"
+        save_path =  f"{self.output_path}/"+f"{self.name}.jpg"
         for zone in self.zones:
             zone.draw(image, thickness=thickness)
 
       
         cv2.imwrite(save_path, image)
+        print("image saved")
            
 
     def get_zones(self, coordinate_file):
