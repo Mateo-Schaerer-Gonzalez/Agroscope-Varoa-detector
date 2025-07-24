@@ -3,9 +3,11 @@ import cv2
 import numpy as np
 
 
-def get_frames(folder_path):
+def get_frames(folder_path, discobox_run=True):
     frames = []
-
+    if discobox_run:
+        folder_path = "../"+folder_path
+    
     for root, _, files in os.walk(folder_path):
         print(f"root folder", root)
         for fname in files:
