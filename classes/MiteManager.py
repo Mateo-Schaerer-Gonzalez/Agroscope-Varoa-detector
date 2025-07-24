@@ -138,9 +138,6 @@ class MiteManager:
         survival_path =  f"{self.output_path}/"+f"{self.name}_survival_path.png"
 
 
-        print("filename: ",filename)
-        print("image_path: ", image_path)
-        print("hist_path: ", hist_path)
         # Step 1: Prepare the data
         summary_data = []
         all_variabilities = []
