@@ -7,6 +7,11 @@ from classes.TextReader import has_text
 import pandas as pd
 from openpyxl import load_workbook
 from openpyxl.drawing.image import Image as OpenpyxlImage
+
+
+import matplotlib
+matplotlib.use('Agg') 
+
 import matplotlib.pyplot as plt
 import os
 
