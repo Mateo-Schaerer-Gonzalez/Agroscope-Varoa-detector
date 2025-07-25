@@ -146,19 +146,23 @@ class MiteManager:
 
 
     def Excelsummary(self):
-        # Ensure the results output folder exists
+        # Ensure the results folder exists
         results_base = os.path.join(self.output_path, "results")
-        os.makedirs(results_base, exist_ok=True)
+        if not os.path.exists(results_base):
+            print("Results folder does not exist.")
+            return
 
-        # Find the next available recording subfolder (e.g., recording1, recording2, ...)
-        i = 1
-        while True:
-            results_folder = os.path.join(results_base, f"recording{i}")
-            if not os.path.exists(results_folder):
-                os.makedirs(results_folder)
-                break
-            i += 1
+        # Find all recording subfolders
+        recording_folders = glob.glob(os.path.join(results_base, "recording*"))
+        if not recording_folders:
+            print("No recording folders found.")
+            return
 
+        # Sort folders by creation time (latest last)
+        recording_folders.sort(key=os.path.getctime)
+        results_folder = recording_folders[-1]  # most recent
+
+        print(f"Saving Excel summary to: {results_folder}")
 
         # Update file paths to use the results folder
         filename = os.path.join(results_folder, f"{self.name}_summary.xlsx")
