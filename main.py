@@ -11,7 +11,7 @@ from utils.tools import get_frames, convert_yolo_to_coords  #, preprocess_frames
 from classes.MiteManager import MiteManager
 
 
-def predict(folder_path, name, num_per_plate, reanalyze=True):
+def predict(folder_path, name, num_per_plate, reanalyze=False):
     print("getting frames")
 
     frames = get_frames(folder_path)
@@ -41,17 +41,19 @@ def predict(folder_path, name, num_per_plate, reanalyze=True):
        
     else:
         # Create the base results folder
-        results_base = os.path.join(folder_path, "results")
-        os.makedirs(results_base, exist_ok=True)
+        results_base = results_folder = os.path.join(folder_path, "results")
+        os.makedirs(results_folder, exist_ok=True)
 
         # Find the next available recording subfolder (e.g., recording1, recording2, ...)
         i = 1
         while True:
-            results_folder = os.path.join(results_base, f"recording{i}")
-            if not os.path.exists(results_folder):
-                os.makedirs(results_folder)
+            recording_folder = os.path.join(results_base, f"recording{i}")
+            if not os.path.exists(recording_folder):
+                os.makedirs(recording_folder)
                 break
             i += 1
+
+     
 
     
         
