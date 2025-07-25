@@ -132,11 +132,16 @@ class MiteManager:
 
 
     def Excelsummary(self):
-        filename = f"{self.output_path}/"+f"{self.name}_summary.xlsx"
-        image_path = f"{self.output_path}/"+f"{self.name}.jpg"
-        hist_path = f"{self.output_path}/"+f"{self.name}_variability_histogram.png"
-        survival_path =  f"{self.output_path}/"+f"{self.name}_survival_path.png"
+        # Ensure the results output folder exists
+        results_folder = os.path.join(self.output_path, "results")
+        os.makedirs(results_folder, exist_ok=True)
 
+        # Update file paths to use the results folder
+        filename = os.path.join(results_folder, f"{self.name}_summary.xlsx")
+        image_path = os.path.join(results_folder, f"{self.name}.jpg")
+        hist_path = os.path.join(results_folder, f"{self.name}_variability_histogram.png")
+        survival_path = os.path.join(results_folder, f"{self.name}_survival_path.png")
+        
 
         # Step 1: Prepare the data
         summary_data = []
