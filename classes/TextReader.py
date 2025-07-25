@@ -4,7 +4,19 @@ import numpy as np
 import cv2
 
 from tokenizers import Tokenizer, models, trainers, pre_tokenizers
-from transformers import PreTrainedTokenizerFast
+from transformers import  PreTrainedTokenizerFast
+
+
+
+#write the vocab txt file
+code_vocab = sorted(list(set(
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789" +
+    "{}[]()<>+-*/=!:;,.\"'#_\\|&%^~` "
+)))
+
+with open("code_vocab.txt", "w") as f:
+    for char in code_vocab:
+        f.write(char + "\n")
 
 # Initialize a char-level tokenizer
 tokenizer = Tokenizer(models.BPE(unk_token="[UNK]"))
