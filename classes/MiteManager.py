@@ -19,7 +19,8 @@ import matplotlib.pyplot as plt
 import os
 
 class MiteManager:
-    def __init__(self, coordinate_file, mites_detection, frames,  name, output_folder, reanalyze=0):
+    def __init__(self, coordinate_file, mites_detection, 
+                 frames,  name, output_folder, reanalyze=0,img_size=(10,20)):
 
         if not os.path.isabs(coordinate_file):
             coordinate_file = os.path.abspath(
@@ -46,6 +47,7 @@ class MiteManager:
         self.get_zones(coordinate_file) # get the zones from the coordinate file
         self.getMites(mites_detection, self.frames, self.zones)  # get the mites from the detection results and frames
         self.reanalyze = reanalyze
+        self.img_size = img_size
 
         #check if there is a reanalyze folder:
         
@@ -58,6 +60,12 @@ class MiteManager:
 
         # Save image with a unique name
         filename = os.path.join(self.output_path, f"{self.name}_frame_0.jpg")
+
+        #resize image
+        target_size = (self.img.shape[1], self.img.shape[0])  # (width, height)
+        image = cv2.resize(image, target_size)
+
+
         cv2.imwrite(filename, image)
         print(f"Image saved to: {filename}")
            
@@ -185,8 +193,6 @@ class MiteManager:
 
         try:
             img = OpenpyxlImage(image_path)
-            img.width = img.width * 0.5  # scale down to 50%
-            img.height = img.height * 0.5
             img.anchor = "G2"
             ws.add_image(img)
         except FileNotFoundError:
@@ -194,7 +200,7 @@ class MiteManager:
 
         # Step 4: Create and insert variability histogram
         if all_variabilities:
-            plt.figure(figsize=(6, 4))
+            plt.figure(figsize=self.img_size)
             plt.hist(all_variabilities, bins=20, color="steelblue", edgecolor="black")
             plt.title("Distribution of Mite Variability")
             plt.xlabel("Variability")
@@ -221,7 +227,7 @@ class MiteManager:
         zone_labels = [row["Zone ID"] for row in summary_data]
         alive_percentages = [row["Survival %"] for row in summary_data]
 
-        plt.figure(figsize=(8, 4))
+        plt.figure(figsize=self.img_size)
         plt.bar(zone_labels, alive_percentages, color="mediumseagreen", edgecolor="black")
         plt.title("Survival Rate by Zone")
         plt.xlabel("Zone ID")
