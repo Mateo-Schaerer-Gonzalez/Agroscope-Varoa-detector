@@ -191,7 +191,7 @@ class MiteManager:
             img.width = img.width * 0.5  # scale down to 50%
             img.height = img.height * 0.5
 
-            self.img_size = (img.width, img.height)
+           
             img.anchor = "G2"
             ws.add_image(img)
         except FileNotFoundError:
@@ -211,8 +211,6 @@ class MiteManager:
             # Insert histogram image
             try:
                 hist_img = OpenpyxlImage(hist_path)
-                
-
                 hist_img.anchor = "W1"  # Placed lower to avoid overlap
                 ws.add_image(hist_img)
             except FileNotFoundError:
