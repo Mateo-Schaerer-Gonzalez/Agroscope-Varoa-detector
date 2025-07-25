@@ -20,7 +20,7 @@ import os
 
 class MiteManager:
     def __init__(self, coordinate_file, mites_detection, 
-                 frames,  name, output_folder, reanalyze=0,img_size=(10,20)):
+                 frames,  name, output_folder, reanalyze=0,img_size=(500,500)):
 
         if not os.path.isabs(coordinate_file):
             coordinate_file = os.path.abspath(
@@ -62,7 +62,7 @@ class MiteManager:
         filename = os.path.join(self.output_path, f"{self.name}_frame_0.jpg")
 
         #resize image
-        target_size = (self.img_size[1], self.img_size[0])  # (width, height)
+        target_size = (self.img_size[0], self.img_size[1])  # (width, height)
         image = cv2.resize(image, target_size)
 
 
