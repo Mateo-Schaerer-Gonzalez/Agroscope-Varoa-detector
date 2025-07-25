@@ -62,7 +62,7 @@ class MiteManager:
         filename = os.path.join(self.output_path, f"{self.name}_frame_0.jpg")
 
         #resize image
-        target_size = (self.img.shape[1], self.img.shape[0])  # (width, height)
+        target_size = (self.img_size[1], self.img_size[0])  # (width, height)
         image = cv2.resize(image, target_size)
 
 
