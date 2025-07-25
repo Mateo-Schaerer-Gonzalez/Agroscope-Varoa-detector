@@ -137,6 +137,7 @@ class MiteManager:
 
     def Excelsummary(self):
         # Ensure the results output folder exists
+        results_folder = os.path.join(self.output_path, "results")
         os.makedirs(results_folder, exist_ok=True)
         results_folder = os.path.join(self.output_path, "results")
 
