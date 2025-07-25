@@ -70,7 +70,7 @@ class MiteManager:
             for line in f:
                 parts = line.strip().split()
                 if len(parts) != 5:
-                    print(f"Skipping invalid line: {line.strip()}")
+                    #print(f"Skipping invalid line: {line.strip()}")
                     continue
 
                 class_id = int(parts[0])
