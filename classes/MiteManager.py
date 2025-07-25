@@ -44,13 +44,15 @@ class MiteManager:
         self.get_zones(coordinate_file) # get the zones from the coordinate file
         self.getMites(mites_detection, self.frames, self.zones)  # get the mites from the detection results and frames
 
-    def draw(self, image, thickness=2, draw_zones=False):
-        save_path =  f"{self.output_path}/"+f"{self.name}.jpg"
+    def draw(self, image, thickness=2):
+        results_folder = os.path.join(self.output_path, "results")
+        os.makedirs(results_folder, exist_ok=True)
+
         for zone in self.zones:
             zone.draw(image, thickness=thickness)
 
       
-        cv2.imwrite(save_path, image)
+        cv2.imwrite(results_folder, image)
         print("image saved")
            
 
@@ -133,8 +135,9 @@ class MiteManager:
 
     def Excelsummary(self):
         # Ensure the results output folder exists
-        results_folder = os.path.join(self.output_path, "results")
         os.makedirs(results_folder, exist_ok=True)
+        results_folder = os.path.join(self.output_path, "results")
+
 
         # Update file paths to use the results folder
         filename = os.path.join(results_folder, f"{self.name}_summary.xlsx")
