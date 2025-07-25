@@ -11,7 +11,7 @@ from utils.tools import get_frames, convert_yolo_to_coords  #, preprocess_frames
 from classes.MiteManager import MiteManager
 
 
-def predict(folder_path, name, num_per_plate):
+def predict(folder_path, name, num_per_plate, reanalyze=True):
     print("getting frames")
 
     frames = get_frames(folder_path)
@@ -29,7 +29,8 @@ def predict(folder_path, name, num_per_plate):
                         mites_detection=detector.result, 
                         frames=frames,
                         name = name,
-                        output_folder = folder_path)
+                        output_folder = folder_path
+                        reanalyze=reanalyze)
    
 
 

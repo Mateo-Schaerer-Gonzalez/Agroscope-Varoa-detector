@@ -18,7 +18,7 @@ import matplotlib.pyplot as plt
 import os
 
 class MiteManager:
-    def __init__(self, coordinate_file, mites_detection, frames,  name, output_folder):
+    def __init__(self, coordinate_file, mites_detection, frames,  name, output_folder, reanalyze=False):
 
         if not os.path.isabs(coordinate_file):
             coordinate_file = os.path.abspath(
@@ -44,10 +44,27 @@ class MiteManager:
         }
         self.get_zones(coordinate_file) # get the zones from the coordinate file
         self.getMites(mites_detection, self.frames, self.zones)  # get the mites from the detection results and frames
+        self.reanalyze = reanalyze
 
     def draw(self, image, thickness=2):
+        if self.reanalyze:
+             # Create the base reanalyzed folder
+            base_dir = self.output_path
+            i = 1
+            while True:
+                results_folder = os.path.join(base_dir, f"reanalyzed{i}")
+                if not os.path.exists(results_folder):
+                    os.makedirs(results_folder)
+                    break
+                i += 1
+
+            folder = f"reanalyzed{i-1}"
+
+        else:
+            folder = "results"
+            
         # Create the base results folder
-        results_base = os.path.join(self.output_path, "results")
+        results_base = os.path.join(self.output_path, folder)
         os.makedirs(results_base, exist_ok=True)
 
         # Find the next available recording subfolder (e.g., recording1, recording2, ...)
@@ -147,8 +164,25 @@ class MiteManager:
 
 
     def Excelsummary(self):
-        # Ensure the results folder exists
-        results_base = os.path.join(self.output_path, "results")
+        if self.reanalyze:
+             # Create the base reanalyzed folder
+            base_dir = self.output_path
+            i = 1
+            while True:
+                results_folder = os.path.join(base_dir, f"reanalyzed{i}")
+                if not os.path.exists(results_folder):
+                    os.makedirs(results_folder)
+                    break
+                i += 1
+
+            folder = f"reanalyzed{i-1}"
+
+        else:
+            folder = "results"
+
+
+
+        results_base = os.path.join(self.output_path, folder)
         if not os.path.exists(results_base):
             print("Results folder does not exist.")
             return
