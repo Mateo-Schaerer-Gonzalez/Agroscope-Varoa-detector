@@ -51,8 +51,10 @@ class MiteManager:
         for zone in self.zones:
             zone.draw(image, thickness=thickness)
 
+
+        filename = os.path.join(results_folder, "frame_0.jpg")
       
-        cv2.imwrite(results_folder, image)
+        cv2.imwrite(filename, image)
         print("image saved")
            
 

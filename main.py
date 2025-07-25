@@ -35,6 +35,6 @@ def predict(folder_path, name, num_per_plate):
 
     stage.mite_variability()
 
-    stage.draw(frames[0], thickness=2, draw_zones=True)
+    stage.draw(frames[0], thickness=2)
 
     stage.Excelsummary()
