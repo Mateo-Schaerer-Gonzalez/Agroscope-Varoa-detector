@@ -29,7 +29,7 @@ def predict(folder_path, name, num_per_plate, reanalyze=True):
                         mites_detection=detector.result, 
                         frames=frames,
                         name = name,
-                        output_folder = folder_path
+                        output_folder = folder_path,
                         reanalyze=reanalyze)
    
 

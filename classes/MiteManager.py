@@ -8,6 +8,7 @@ import pandas as pd
 from openpyxl import load_workbook
 from openpyxl.drawing.image import Image as OpenpyxlImage
 import glob
+import re
 
 import matplotlib
 matplotlib.use('Agg')  # Must be set before importing pyplot
@@ -165,18 +166,16 @@ class MiteManager:
 
     def Excelsummary(self):
         if self.reanalyze:
-             # Create the base reanalyzed folder
-            base_dir = self.output_path
-            i = 1
-            while True:
-                results_folder = os.path.join(base_dir, f"reanalyzed{i}")
-                if not os.path.exists(results_folder):
-                    os.makedirs(results_folder)
-                    break
-                i += 1
+            
+            reanalyzed_folders = glob.glob(os.path.join(results_base, "reanalyzed*"))
 
-            folder = f"reanalyzed{i-1}"
-
+            max_index = 0
+            for folder in reanalyzed_folders:
+                match = re.search(r'reanalyzed(\d+)$', os.path.basename(folder))
+                if match:
+                    index = int(match.group(1))
+                    if index > max_index:
+                        max_index = index
         else:
             folder = "results"
 
