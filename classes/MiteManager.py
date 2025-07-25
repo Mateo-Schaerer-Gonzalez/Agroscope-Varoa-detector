@@ -19,6 +19,8 @@ import matplotlib.pyplot as plt
 import os
 
 class MiteManager:
+    #TODO: look at reanchoring the images in excel file
+
     def __init__(self, coordinate_file, mites_detection, 
                  frames,  name, output_folder, reanalyze=0):
 
@@ -47,7 +49,7 @@ class MiteManager:
         self.get_zones(coordinate_file) # get the zones from the coordinate file
         self.getMites(mites_detection, self.frames, self.zones)  # get the mites from the detection results and frames
         self.reanalyze = reanalyze
-        self.img_size = (10,10)
+        self.img_size = (15,10)
         
         #check if there is a reanalyze folder:
         
