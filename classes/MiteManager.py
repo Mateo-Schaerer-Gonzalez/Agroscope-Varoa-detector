@@ -141,22 +141,12 @@ class MiteManager:
 
     def Excelsummary(self):
         # Find all recording subfolders
-        recording_folders = glob.glob(os.path.join(self.output_path, "recording*"))
-        if not recording_folders:
-            print("No recording folders found.")
-            return
-
-        # Sort folders by creation time (latest last)
-        recording_folders.sort(key=os.path.getctime)
-        results_folder = recording_folders[-1]  # most recent
-
-        print(f"Saving Excel summary to: {results_folder}")
-
+       
         # Update file paths to use the results folder
-        filename = os.path.join(results_folder, f"{self.name}_summary.xlsx")
-        image_path = os.path.join(results_folder, f"{self.name}_frame_0.jpg")
-        hist_path = os.path.join(results_folder, f"{self.name}_variability_histogram.png")
-        survival_path = os.path.join(results_folder, f"{self.name}_survival_path.png")
+        filename = os.path.join(self.output_path, f"{self.name}_summary.xlsx")
+        image_path = os.path.join(self.output_path, f"{self.name}_frame_0.jpg")
+        hist_path = os.path.join(self.output_path, f"{self.name}_variability_histogram.png")
+        survival_path = os.path.join(self.output_path, f"{self.name}_survival_path.png")
         
 
         # Step 1: Prepare the data
