@@ -144,7 +144,7 @@ class MiteManager:
 
         # Update file paths to use the results folder
         filename = os.path.join(results_folder, f"{self.name}_summary.xlsx")
-        image_path = os.path.join(results_folder, "frame_0.jpg")
+        image_path = os.path.join(results_folder, f"{self.name}_frame_0.jpg")
         hist_path = os.path.join(results_folder, f"{self.name}_variability_histogram.png")
         survival_path = os.path.join(results_folder, f"{self.name}_survival_path.png")
         
