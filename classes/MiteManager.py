@@ -19,7 +19,7 @@ import matplotlib.pyplot as plt
 import os
 
 class MiteManager:
-    def __init__(self, coordinate_file, mites_detection, frames,  name, output_folder, reanalyze=False):
+    def __init__(self, coordinate_file, mites_detection, frames,  name, output_folder, reanalyze=0):
 
         if not os.path.isabs(coordinate_file):
             coordinate_file = os.path.abspath(
@@ -47,42 +47,17 @@ class MiteManager:
         self.getMites(mites_detection, self.frames, self.zones)  # get the mites from the detection results and frames
         self.reanalyze = reanalyze
 
+        #check if there is a reanalyze folder:
+        
+
+
     def draw(self, image, thickness=2):
-        if self.reanalyze:
-             # Create the base reanalyzed folder
-            base_dir = self.output_path
-            i = 1
-            while True:
-                results_folder = os.path.join(base_dir, f"reanalyzed{i}")
-                if not os.path.exists(results_folder):
-                    os.makedirs(results_folder)
-                    break
-                i += 1
-
-            folder = f"reanalyzed{i-1}"
-
-        else:
-            folder = "results"
-            
-        # Create the base results folder
-        results_base = os.path.join(self.output_path, folder)
-        os.makedirs(results_base, exist_ok=True)
-
-        # Find the next available recording subfolder (e.g., recording1, recording2, ...)
-        i = 1
-        while True:
-            results_folder = os.path.join(results_base, f"recording{i}")
-            if not os.path.exists(results_folder):
-                os.makedirs(results_folder)
-                break
-            i += 1
-
         # Draw zones on the image
         for zone in self.zones:
             zone.draw(image, thickness=thickness)
 
         # Save image with a unique name
-        filename = os.path.join(results_folder, f"{self.name}_frame_0.jpg")
+        filename = os.path.join(self.output_path, f"{self.name}_frame_0.jpg")
         cv2.imwrite(filename, image)
         print(f"Image saved to: {filename}")
            
@@ -165,29 +140,8 @@ class MiteManager:
 
 
     def Excelsummary(self):
-        if self.reanalyze:
-            
-            reanalyzed_folders = glob.glob(os.path.join(results_base, "reanalyzed*"))
-
-            max_index = 0
-            for folder in reanalyzed_folders:
-                match = re.search(r'reanalyzed(\d+)$', os.path.basename(folder))
-                if match:
-                    index = int(match.group(1))
-                    if index > max_index:
-                        max_index = index
-        else:
-            folder = "results"
-
-
-
-        results_base = os.path.join(self.output_path, folder)
-        if not os.path.exists(results_base):
-            print("Results folder does not exist.")
-            return
-
         # Find all recording subfolders
-        recording_folders = glob.glob(os.path.join(results_base, "recording*"))
+        recording_folders = glob.glob(os.path.join(self.output_path, "recording*"))
         if not recording_folders:
             print("No recording folders found.")
             return

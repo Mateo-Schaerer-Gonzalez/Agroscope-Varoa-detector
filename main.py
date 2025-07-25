@@ -24,13 +24,46 @@ def predict(folder_path, name, num_per_plate, reanalyze=True):
     # get the bounding boxes from the first frame:
     detector.run_detection(frames[0]) 
 
+    #get the reanalyze folder:
+    if reanalyze:
+        # Create the base reanalyzed folder
+        base_dir = folder_path
+        i = 1
+        while True:
+            results_folder = os.path.join(base_dir, f"reanalysis{i}")
+            if not os.path.exists(results_folder):
+                os.makedirs(results_folder)
+                break
+            i += 1
+
+        print( f"reanalysis{i} created...")
+
+       
+    else:
+        # Create the base results folder
+        results_base = os.path.join(folder_path, "results")
+        os.makedirs(results_base, exist_ok=True)
+
+        # Find the next available recording subfolder (e.g., recording1, recording2, ...)
+        i = 1
+        while True:
+            results_folder = os.path.join(results_base, f"recording{i}")
+            if not os.path.exists(results_folder):
+                os.makedirs(results_folder)
+                break
+            i += 1
+
+    
+        
+
+
     # get the mites from the image:
     stage = MiteManager(coordinate_file=f"Zoning/coordinates{num_per_plate}.txt",
                         mites_detection=detector.result, 
                         frames=frames,
                         name = name,
-                        output_folder = folder_path,
-                        reanalyze=reanalyze)
+                        output_folder = results_folder,
+                        reanalyze = i if reanalyze else 0)
    
 
 
