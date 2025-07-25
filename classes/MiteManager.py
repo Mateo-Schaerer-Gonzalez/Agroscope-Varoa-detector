@@ -45,17 +45,27 @@ class MiteManager:
         self.getMites(mites_detection, self.frames, self.zones)  # get the mites from the detection results and frames
 
     def draw(self, image, thickness=2):
-        results_folder = os.path.join(self.output_path, "results")
-        os.makedirs(results_folder, exist_ok=True)
+        # Create the base results folder
+        results_base = os.path.join(self.output_path, "results")
+        os.makedirs(results_base, exist_ok=True)
 
+        # Find the next available recording subfolder (e.g., recording1, recording2, ...)
+        i = 1
+        while True:
+            results_folder = os.path.join(results_base, f"recording{i}")
+            if not os.path.exists(results_folder):
+                os.makedirs(results_folder)
+                break
+            i += 1
+
+        # Draw zones on the image
         for zone in self.zones:
             zone.draw(image, thickness=thickness)
 
-
+        # Save image with a unique name
         filename = os.path.join(results_folder, f"{self.name}_frame_0.jpg")
-      
         cv2.imwrite(filename, image)
-        print("image saved")
+        print(f"Image saved to: {filename}")
            
 
     def get_zones(self, coordinate_file):
@@ -137,9 +147,17 @@ class MiteManager:
 
     def Excelsummary(self):
         # Ensure the results output folder exists
-        results_folder = os.path.join(self.output_path, "results")
-        os.makedirs(results_folder, exist_ok=True)
-        results_folder = os.path.join(self.output_path, "results")
+        results_base = os.path.join(self.output_path, "results")
+        os.makedirs(results_base, exist_ok=True)
+
+        # Find the next available recording subfolder (e.g., recording1, recording2, ...)
+        i = 1
+        while True:
+            results_folder = os.path.join(results_base, f"recording{i}")
+            if not os.path.exists(results_folder):
+                os.makedirs(results_folder)
+                break
+            i += 1
 
 
         # Update file paths to use the results folder
