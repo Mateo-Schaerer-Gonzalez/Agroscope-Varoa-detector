@@ -3,61 +3,29 @@ from transformers import TrOCRProcessor, VisionEncoderDecoderModel
 import numpy as np
 import cv2
 
-from tokenizers import Tokenizer, models, trainers, pre_tokenizers
-from transformers import  PreTrainedTokenizerFast
-
-
-
-#write the vocab txt file
-code_vocab = sorted(list(set(
-    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789" +
-    "{}[]()<>+-*/=!:;,.\"'#_\\|&%^~` "
-)))
-
-with open("code_vocab.txt", "w") as f:
-    for char in code_vocab:
-        f.write(char + "\n")
-
-# Initialize a char-level tokenizer
-tokenizer = Tokenizer(models.BPE(unk_token="[UNK]"))
-tokenizer.pre_tokenizer = pre_tokenizers.Whitespace()
-
-# Train the tokenizer
-trainer = trainers.BpeTrainer(special_tokens=["[PAD]", "[UNK]", "[CLS]", "[SEP]", "[MASK]"])
-tokenizer.train(["code_vocab.txt"], trainer)
-
-# Wrap it for HuggingFace compatibility
-hf_tokenizer = PreTrainedTokenizerFast(tokenizer_object=tokenizer)
-hf_tokenizer.add_special_tokens({'pad_token': '[PAD]'})
-
-# Save
-hf_tokenizer.save_pretrained("char_tokenizer")
-
-
-
-
-
-
 class TextReader:
     def __init__(self, model_name="microsoft/trocr-large-handwritten", device=None):
-        # Load model and processor
-        self.processor = TrOCRProcessor.from_pretrained(model_name)  # Only image processor
+        self.processor = TrOCRProcessor.from_pretrained(model_name)
         self.model = VisionEncoderDecoderModel.from_pretrained(model_name)
-
-        # Set tokenizer IDs
-        self.model.config.decoder_start_token_id = hf_tokenizer.convert_tokens_to_ids("[PAD]")
-        self.model.config.pad_token_id = hf_tokenizer.convert_tokens_to_ids("[PAD]")
-
-        # Device setup
         self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
         self.model.to(self.device)
         self.model.eval()
 
-    def read(self, image):
-        pixel_values = self.processor(image, return_tensors="pt").pixel_values.to(self.device)
-        generated_ids = self.model.generate(pixel_values, max_new_tokens=64)
+    def read(self,image):
+        """
+        There are 3 main models to choose from, small, base and large. 
+        Some other fine-tuned models: IAM Handwritten, SROIE Receipts
+        """
 
-        generated_text = hf_tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
+        # Check for GPU availability
+
+        pixel_values = self.processor(image, return_tensors="pt").pixel_values.to(self.device)
+        generated_ids = self.model.generate(pixel_values, 
+                                            max_new_tokens=30)
+        
+        
+        generated_text = self.processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
+        print(generated_text)
         return generated_text.strip()
 
 
