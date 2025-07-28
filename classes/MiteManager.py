@@ -73,7 +73,7 @@ class MiteManager:
             zone.draw(image, thickness=thickness)
 
         # Save image with a unique name
-        filename = os.path.join(self.output_path, f"{self.name}_frame_0.jpg")
+        filename = os.path.join(self.output_path, "frame_0.jpg")
 
         cv2.imwrite(filename, image)
         print(f"Image saved to: {filename}")
