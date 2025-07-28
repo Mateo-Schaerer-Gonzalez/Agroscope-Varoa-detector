@@ -43,6 +43,8 @@ def predict(folder_path, name, num_per_plate, reanalyze=False, discobox_run=Fals
             i += 1
 
         print( f"reanalysis{i} created...")
+
+
     else:
         results_base = os.path.join(results_base, "results")
         os.makedirs(results_base, exist_ok=True)
@@ -58,7 +60,7 @@ def predict(folder_path, name, num_per_plate, reanalyze=False, discobox_run=Fals
                 break
             i += 1
 
-        
+    print("test here")
     # get the mites from the image:
     stage = MiteManager(coordinate_file=f"Zoning/coordinates{num_per_plate}.txt",
                         mites_detection=detector.result, 
