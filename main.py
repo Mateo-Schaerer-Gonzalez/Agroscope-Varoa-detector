@@ -32,7 +32,7 @@ def predict(folder_path, name, num_per_plate, reanalyze=False, discobox_run=Fals
 
      #get the reanalyze folder:
     if reanalyze:
-        
+        print("reanalysis is on")
         i = 1
         while True:
             results_folder = os.path.join(results_base, f"reanalysis{i}")
@@ -78,4 +78,4 @@ def predict(folder_path, name, num_per_plate, reanalyze=False, discobox_run=Fals
 
     stage.Excelsummary()
 
-predict("Datasets/writing_test/", "test", 1)
+#predict("Datasets/writing_test/", "test", 1)
