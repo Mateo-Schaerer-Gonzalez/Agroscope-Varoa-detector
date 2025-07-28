@@ -31,8 +31,7 @@ def predict(folder_path, name, num_per_plate, reanalyze=False, discobox_run=Fals
             reanalyze_path = os.path.join(results_base, f"reanalysis{i}")
             if not os.path.exists(reanalyze_path):
                 os.makedirs(reanalyze_path)
-                results_folder = os.path.join(reanalyze_path, f"recording{i}")
-                os.makedirs(results_folder)
+                results_folder = reanalyze_path
                 print(f"reanalysis{i} created...")
                 break
             i += 1
