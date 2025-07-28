@@ -35,9 +35,8 @@ def predict(folder_path, name, num_per_plate, reanalyze=False, discobox_run=Fals
         print("reanalysis is on")
         i = 1
         while True:
-            results_folder = os.path.join(results_base, f"reanalysis{i}")
-            print(results_folder)
-            print("condition:", not os.path.exists(results_base))
+            results_base = os.path.join(results_base, f"reanalysis{i}")
+
             if not os.path.exists(results_base):
                 os.makedirs(results_base)
                 break
