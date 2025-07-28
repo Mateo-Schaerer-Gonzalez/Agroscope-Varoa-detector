@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 
 
-COUNTER_FILE = ".predict_count"
+COUNTER_FILE = ".count"
 
 
 def get_frames(folder_path, discobox_run=True, reanalyze=True):

@@ -176,11 +176,11 @@ class MiteManager:
         # Find all recording subfolders
        
         # Update file paths to use the results folder
-        filename = os.path.join(self.output_path, f"{self.name}_summary.xlsx")
-        csv_path = os.path.join(self.output_path, f"{self.name}_summary.csv")
-        image_path = os.path.join(self.output_path, f"{self.name}_frame_0.jpg")
-        hist_path = os.path.join(self.output_path, f"{self.name}_variability_histogram.png")
-        survival_path = os.path.join(self.output_path, f"{self.name}_survival_path.png")
+        filename = os.path.join(self.output_path, "summary.xlsx")
+        csv_path = os.path.join(self.output_path, "summary.csv")
+        image_path = os.path.join(self.output_path, "frame_0.jpg")
+        hist_path = os.path.join(self.output_path, "variability_histogram.png")
+        survival_path = os.path.join(self.output_path, "survival_path.png")
         
 
         # Step 1: Prepare the data
@@ -298,7 +298,7 @@ class MiteManager:
                 match = pattern.match(entry)
                 if match:
                     recording_number = int(match.group(1))
-                    csv_path = os.path.join(full_path, f"{self.name}_summary.csv")
+                    csv_path = os.path.join(full_path, "summary.csv")
 
                     if os.path.exists(csv_path):
                         df = pd.read_csv(csv_path)
