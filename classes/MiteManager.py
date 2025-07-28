@@ -22,8 +22,9 @@ class MiteManager:
     #TODO: look at reanchoring the images in excel file
 
     def __init__(self, coordinate_file, mites_detection, 
-                 frames,  name, output_folder, reanalyze=0):
+                 frames,  name, output_folder, reanalyze=0, discobox_run=False):
 
+    
         if not os.path.isabs(coordinate_file):
             coordinate_file = os.path.abspath(
                 os.path.join(
@@ -32,10 +33,14 @@ class MiteManager:
                     coordinate_file  # assuming relative path is relative to the folder above this script
                 )
             )
-
-        # get the output path
+    
         base_dir = os.path.dirname(os.path.abspath(__file__))
-        self.output_path = os.path.abspath(os.path.join(base_dir, "..",  "..", output_folder))
+
+        if discobox_run:
+            # get the output path
+            self.output_path = os.path.abspath(os.path.join(base_dir, "..",  "..", output_folder))
+        else:
+            self.output_path = os.path.abspath(os.path.join(base_dir,"..",  output_folder))
 
 
         self.coordinate_file = coordinate_file

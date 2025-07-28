@@ -11,10 +11,10 @@ from utils.tools import get_frames, convert_yolo_to_coords  #, preprocess_frames
 from classes.MiteManager import MiteManager
 
 
-def predict(folder_path, name, num_per_plate, reanalyze=False):
+def predict(folder_path, name, num_per_plate, reanalyze=False, discobox_run=False):
     print("getting frames")
 
-    frames = get_frames(folder_path)
+    frames = get_frames(folder_path, discobox_run)
 
     print("got frames")
 
@@ -24,13 +24,18 @@ def predict(folder_path, name, num_per_plate, reanalyze=False):
     # get the bounding boxes from the first frame:
     detector.run_detection(frames[0]) 
 
-    #get the reanalyze folder:
+    if discobox_run:
+        results_base = folder_path
+    else:
+        results_base = "outputs"
+
+
+     #get the reanalyze folder:
     if reanalyze:
-        # Create the base reanalyzed folder
-        base_dir = folder_path
+        
         i = 1
         while True:
-            results_folder = os.path.join(base_dir, f"reanalysis{i}")
+            results_folder = os.path.join(results_base, f"reanalysis{i}")
             if not os.path.exists(results_base):
                 os.makedirs(results_base)
                 break
@@ -38,7 +43,7 @@ def predict(folder_path, name, num_per_plate, reanalyze=False):
 
         print( f"reanalysis{i} created...")
     else:
-        results_base = os.path.join(folder_path, "results")
+        results_base = os.path.join(results_base, "results")
         os.makedirs(results_base, exist_ok=True)
 
     
@@ -51,14 +56,19 @@ def predict(folder_path, name, num_per_plate, reanalyze=False):
                 os.makedirs(results_folder)
                 break
             i += 1
-    
+
+        
     # get the mites from the image:
     stage = MiteManager(coordinate_file=f"Zoning/coordinates{num_per_plate}.txt",
                         mites_detection=detector.result, 
                         frames=frames,
                         name = name,
                         output_folder = results_folder,
-                        reanalyze = i if reanalyze else 0)
+                        reanalyze = i if reanalyze else 0,
+                        discobox_run = discobox_run)
+    
+
+
    
 
 
@@ -67,3 +77,5 @@ def predict(folder_path, name, num_per_plate, reanalyze=False):
     stage.draw(frames[0], thickness=2)
 
     stage.Excelsummary()
+
+predict("Datasets/writing_test/", "test", 1)
