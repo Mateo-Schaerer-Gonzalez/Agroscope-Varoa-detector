@@ -41,7 +41,7 @@ def reanalyze_recording(results_base, num_per_plate, detector, frames_by_recordi
         output_folder=results_folder,
         reanalyze=0,
         discobox_run=discobox_run,
-        recording_count= i)
+        recording_count= i + 1)
 
         stage.mite_variability()
         stage.draw(frames[0], thickness=2)
