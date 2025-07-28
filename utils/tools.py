@@ -3,40 +3,55 @@ import cv2
 import numpy as np
 
 
-def get_frames(folder_path, discobox_run=True):
-    frames = []
-    
+
+def get_frames(folder_path, discobox_run=True, reanalyze=True):
+    frames_by_folder = {}
+
+    # Resolve full folder path
     if discobox_run:
         base_dir = os.path.dirname(os.path.abspath(__file__))
-        folder_path = os.path.abspath(os.path.join(base_dir, "..",  "..", folder_path))
-
-        
-
+        folder_path = os.path.abspath(os.path.join(base_dir, "..", "..", folder_path))
     else:
         folder_path = os.path.abspath(folder_path)
-    
-    for root, dirs, files in os.walk(folder_path, followlinks=True):
-        
 
-        for fname in files:
-            if not fname.lower().endswith(".bmp"):
-                continue
+    # Check if folder_path contains subfolders
+    subfolders = sorted([
+        os.path.join(folder_path, d)
+        for d in os.listdir(folder_path)
+        if os.path.isdir(os.path.join(folder_path, d))
+    ])
 
-            img_path = os.path.join(root, fname)
-            img = cv2.imread(img_path)
-            if img is None:
-                print(f"Skipped (not image or unreadable): {img_path}")
-                continue
+    if not subfolders:
+        subfolders = [folder_path]
 
-            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-            frames.append(img)
+    for subfolder in subfolders:
+        frames = []
+        for root, dirs, files in os.walk(subfolder, followlinks=True):
+            for fname in files:
+                if not fname.lower().endswith(".bmp"):
+                    continue
+                img_path = os.path.join(root, fname)
+                img = cv2.imread(img_path)
+                if img is None:
+                    print(f"Skipped (not image or unreadable): {img_path}")
+                    continue
+                img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+                frames.append(img)
 
-    if len(frames) == 0:
+        if frames:
+            frames_by_folder[subfolder] = np.stack(frames)
+            
+
+    if not frames_by_folder:
         raise ValueError("No images found in folder or none could be loaded.")
 
-    return np.stack(frames)
+    if not reanalyze:
+        # Only return the last folder's stack
+        last_folder = sorted(frames_by_folder.keys())[-1]
+        return frames_by_folder[last_folder]
 
-
+    # Else return all as list
+    return list(frames_by_folder.values())
 
 
 
@@ -120,3 +135,5 @@ def convert_yolo_to_coords(input_file, output_file, image_path):
             f_out.write(f"{class_id} {x1_px:.2f} {y1_px:.2f} {x2_px:.2f} {y2_px:.2f}\n")
 
     print(f"Conversion complete! Output saved to {output_file}")
+
+
