@@ -68,7 +68,7 @@ def predict(folder_path, name, num_per_plate, reanalyze=False, discobox_run=Fals
                         frames=frames,
                         name = name,
                         output_folder = results_folder,
-                        reanalyze = 0 # i if reanalyze else 0,
+                        reanalyze = 0, # i if reanalyze else 0,
                         discobox_run = discobox_run)
     
 
