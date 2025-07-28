@@ -83,16 +83,7 @@ def analyze_recording(results_base, num_per_plate, detector, frames, discobox_ru
     if count >= recording_count:
         stage.general_summary()
         reset_counter()
-        
-        
-        """save_path = os.path.join(results_base, "results", "general")
-
-        csv_path = os.path.join(save_path, "summary.x")
-        os.makedirs(save_path)
-        # here we will make a general summary
-        df = stage.load_data()
-        reset_counter()
-        df.to_csv(csv_path, index=False)"""
+    
 
 
     
