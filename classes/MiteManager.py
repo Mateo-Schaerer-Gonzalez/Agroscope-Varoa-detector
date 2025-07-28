@@ -23,6 +23,7 @@ class MiteManager:
 
     def __init__(self, coordinate_file, mites_detection, 
                  frames,  name, output_folder, reanalyze=0, discobox_run=False):
+        print("making stage...")
 
     
         if not os.path.isabs(coordinate_file):
