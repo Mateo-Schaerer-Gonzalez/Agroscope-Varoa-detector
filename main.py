@@ -25,6 +25,7 @@ def reanalyze_recording(results_base, num_per_plate, detector, frames_by_recordi
     # analysis
 
 
+
     for i, frames in enumerate(frames_by_recording):
         results_folder = os.path.join(reanalyze_path, f"recording{i+1}")
         os.makedirs(results_folder)
@@ -39,13 +40,16 @@ def reanalyze_recording(results_base, num_per_plate, detector, frames_by_recordi
         name=name,
         output_folder=results_folder,
         reanalyze=0,
-        discobox_run=discobox_run)
+        discobox_run=discobox_run
+        recording_count= i)
 
         stage.mite_variability()
         stage.draw(frames[0], thickness=2)
         stage.Excelsummary()
 
     # general summary:
+    stage.general_summary()
+    reset_counter()
    
 
 def analyze_recording(results_base, num_per_plate, detector, frames, discobox_run, name, recording_count):
