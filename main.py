@@ -40,7 +40,7 @@ def reanalyze_recording(results_base, num_per_plate, detector, frames_by_recordi
         name=name,
         output_folder=results_folder,
         reanalyze=0,
-        discobox_run=discobox_run
+        discobox_run=discobox_run,
         recording_count= i)
 
         stage.mite_variability()
