@@ -54,6 +54,7 @@ def analyze_recording(results_base, num_per_plate, detector, frames, discobox_ru
     count = read_counter()
     count += 1
     write_counter(count)
+    print("current count:", count)
 
 
     results_folder = os.path.join(results_base, "results", f"recording{count}")
@@ -114,4 +115,4 @@ def predict(folder_path, name, num_per_plate, reanalyze=False, discobox_run=Fals
     
 
 
-predict("Datasets/writing_test2/", "test", 1, reanalyze=False)
+#predict("Datasets/writing_test2/", "test", 1, reanalyze=False)
