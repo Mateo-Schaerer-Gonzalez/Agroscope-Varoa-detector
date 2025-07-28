@@ -9,6 +9,7 @@ if PROJECT_ROOT not in sys.path:
 from classes.detector import Detector
 from utils.tools import get_frames, convert_yolo_to_coords
 from classes.MiteManager import MiteManager
+from utils.tools import read_counter, reset_counter, write_counter
 
 
 def reanalyze_recording(results_base, num_per_plate, detector, frames_by_recording, discobox_run, name):
@@ -22,6 +23,8 @@ def reanalyze_recording(results_base, num_per_plate, detector, frames_by_recordi
         i += 1
 
     # analysis
+
+
     for i, frames in enumerate(frames_by_recording):
         results_folder = os.path.join(reanalyze_path, f"recording{i+1}")
         os.makedirs(results_folder)
@@ -42,18 +45,21 @@ def reanalyze_recording(results_base, num_per_plate, detector, frames_by_recordi
         stage.draw(frames[0], thickness=2)
         stage.Excelsummary()
 
+    # general summary:
+   
 
-def analyze_recording(results_base, num_per_plate, detector, frames, discobox_run, name):
-    i = 1
-    results_base = os.path.join(results_base, "results")
-    os.makedirs(results_base, exist_ok=True)
+def analyze_recording(results_base, num_per_plate, detector, frames, discobox_run, name, recording_count):
 
-    while True:
-        results_folder = os.path.join(results_base, f"recording{i}")
-        if not os.path.exists(results_folder):
-            os.makedirs(results_folder)
-            break
-        i += 1
+    # count how many recordings have been made
+    count = read_counter()
+    count += 1
+    write_counter(count)
+
+
+    results_folder = os.path.join(results_base, "results", f"recording{count}")
+    os.makedirs(results_folder, exist_ok=True)
+
+
 
     # analysis
     detector.run_detection(frames[0])
@@ -66,18 +72,33 @@ def analyze_recording(results_base, num_per_plate, detector, frames, discobox_ru
         name=name,
         output_folder=results_folder,
         reanalyze=0,
-        discobox_run=discobox_run
+        discobox_run=discobox_run,
+        recording_count = recording_count
     )
 
     stage.mite_variability()
     stage.draw(frames[0], thickness=2)
     stage.Excelsummary()
 
-    
+    if count >= recording_count:
+        stage.general_summary()
+        reset_counter()
+        
+        
+        """save_path = os.path.join(results_base, "results", "general")
+
+        csv_path = os.path.join(save_path, "summary.x")
+        os.makedirs(save_path)
+        # here we will make a general summary
+        df = stage.load_data()
+        reset_counter()
+        df.to_csv(csv_path, index=False)"""
+
 
     
 
-def predict(folder_path, name, num_per_plate, reanalyze=False, discobox_run=False):
+
+def predict(folder_path, name, num_per_plate, reanalyze=False, discobox_run=False, num_recordings=2):
     detector = Detector()
     frames = get_frames(folder_path, discobox_run, reanalyze)
    
@@ -94,7 +115,7 @@ def predict(folder_path, name, num_per_plate, reanalyze=False, discobox_run=Fals
         reanalyze_recording(results_base, num_per_plate, detector, frames, discobox_run, name)
 
     else:
-        analyze_recording(results_base, num_per_plate, detector, frames, discobox_run, name)
+        analyze_recording(results_base, num_per_plate, detector, frames, discobox_run, name, num_recordings)
         
 
    

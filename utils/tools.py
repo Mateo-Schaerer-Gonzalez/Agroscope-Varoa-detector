@@ -3,6 +3,8 @@ import cv2
 import numpy as np
 
 
+COUNTER_FILE = ".predict_count"
+
 
 def get_frames(folder_path, discobox_run=True, reanalyze=True):
     frames_by_folder = {}
@@ -137,3 +139,19 @@ def convert_yolo_to_coords(input_file, output_file, image_path):
     print(f"Conversion complete! Output saved to {output_file}")
 
 
+def read_counter():
+    if os.path.exists(COUNTER_FILE):
+        with open(COUNTER_FILE, "r") as f:
+            try:
+                return int(f.read().strip())
+            except ValueError:
+                return 0
+    return 0
+
+def write_counter(count):
+    with open(COUNTER_FILE, "w") as f:
+        f.write(str(count))
+
+def reset_counter():
+    if os.path.exists(COUNTER_FILE):
+        os.remove(COUNTER_FILE)

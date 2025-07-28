@@ -9,6 +9,7 @@ from openpyxl import load_workbook
 from openpyxl.drawing.image import Image as OpenpyxlImage
 import glob
 import re
+import pickle
 
 import matplotlib
 matplotlib.use('Agg')  # Must be set before importing pyplot
@@ -22,11 +23,11 @@ class MiteManager:
     #TODO: look at reanchoring the images in excel file
 
     def __init__(self, coordinate_file, mites_detection, 
-                 frames,  name, output_folder, reanalyze=0, discobox_run=False):
+                 frames,  name, output_folder, reanalyze=0, discobox_run=False, recording_count=1):
         
         print("initializing stage..")
         
-    
+
         if not os.path.isabs(coordinate_file):
             coordinate_file = os.path.abspath(
                 os.path.join(
@@ -53,7 +54,11 @@ class MiteManager:
             0: "text_zone",
             1: "mite_zone"
         }
-        self.get_zones(coordinate_file) # get the zones from the coordinate file
+
+       
+        self.get_zones(coordinate_file, recording_count) # get the zones from the coordinate file
+        
+
         self.getMites(mites_detection, self.frames, self.zones)  # get the mites from the detection results and frames
         self.reanalyze = reanalyze
         self.img_size = (15,10)
@@ -74,39 +79,55 @@ class MiteManager:
         print(f"Image saved to: {filename}")
            
 
-    def get_zones(self, coordinate_file):
-        textReader = TextReader() #load the text reader
-        print("textReader loaded...")
+    def get_zones(self, coordinate_file, recording_count):
+        zones_file = os.path.join(os.path.dirname(coordinate_file), "zones.pkl")
 
-        with open(coordinate_file, 'r') as f:
-            for line in f:
-                parts = line.strip().split()
-                if len(parts) != 5:
-                    #print(f"Skipping invalid line: {line.strip()}")
-                    continue
+        if recording_count <= 1:
+            textReader = TextReader() #load the text reader
+            print("textReader loaded...")
 
-                class_id = int(parts[0])
-                x1, y1, x2, y2 = map(float, parts[1:])
-                zone_id = self.zone_map[class_id]
+            with open(coordinate_file, 'r') as f:
+                for line in f:
+                    parts = line.strip().split()
+                    if len(parts) != 5:
+                        #print(f"Skipping invalid line: {line.strip()}")
+                        continue
 
-                if zone_id == "mite_zone":
-                     self.zones.append(MiteZone(int(x1), int(y1), int(x2), int(y2)))
-                     
-                if zone_id == "text_zone":
-                    textZone = TextZone(int(x1), int(y1), int(x2), int(y2))
-                    #find the mitebox it belongs to:
-                    for miteZone in self.zones:
-                        if textZone in miteZone:
-                            textZone.parent_rect = miteZone
-                            img = textZone.get_ROI(self.frames)[0]
-                            if has_text(img):
-                                img_PIL = Image.fromarray(img).convert("RGB")  # Get the image from the ROI
-                                textZone.text = textReader.read(img_PIL)
-                            else:
-                                textZone.text = "EMPTY"
+                    class_id = int(parts[0])
+                    x1, y1, x2, y2 = map(float, parts[1:])
+                    zone_id = self.zone_map[class_id]
 
-                            miteZone.add_text_zone(textZone)
-                            break
+                    if zone_id == "mite_zone":
+                        self.zones.append(MiteZone(int(x1), int(y1), int(x2), int(y2)))
+                        
+                    if zone_id == "text_zone":
+                        textZone = TextZone(int(x1), int(y1), int(x2), int(y2))
+                        #find the mitebox it belongs to:
+                        for miteZone in self.zones:
+                            if textZone in miteZone:
+                                textZone.parent_rect = miteZone
+                                img = textZone.get_ROI(self.frames)[0]
+                                if has_text(img):
+                                    img_PIL = Image.fromarray(img).convert("RGB")  # Get the image from the ROI
+                                    textZone.text = textReader.read(img_PIL)
+                                else:
+                                    textZone.text = "EMPTY"
+
+                                miteZone.add_text_zone(textZone)
+                                break
+
+               # ✅ Save zones to file for reuse
+            with open(zones_file, "wb") as f:
+                pickle.dump(self.zones, f)
+            print(f"Zones saved to {zones_file}")
+        else:
+            if os.path.exists(zones_file):
+                with open(zones_file, "rb") as f:
+                    self.zones = pickle.load(f)
+                print(f"Zones loaded from {zones_file}")
+            else:
+                raise FileNotFoundError(f"No saved zone file found at {zones_file}")
+
 
                
 
@@ -156,6 +177,7 @@ class MiteManager:
        
         # Update file paths to use the results folder
         filename = os.path.join(self.output_path, f"{self.name}_summary.xlsx")
+        csv_path = os.path.join(self.output_path, f"{self.name}_summary.csv")
         image_path = os.path.join(self.output_path, f"{self.name}_frame_0.jpg")
         hist_path = os.path.join(self.output_path, f"{self.name}_variability_histogram.png")
         survival_path = os.path.join(self.output_path, f"{self.name}_survival_path.png")
@@ -189,6 +211,11 @@ class MiteManager:
 
         # Step 2: Export summary to Excel
         df = pd.DataFrame(summary_data)
+        # save for genral summary:
+        df.to_csv(csv_path, index=False)
+
+
+
         df.to_excel(filename, index=False)
 
         # Step 3: Add first image if it exists
@@ -257,4 +284,65 @@ class MiteManager:
         print("summary completed sucessfully ...")
 
 
+    def load_data(self, root_folder=None):
+        if not root_folder:
+            # Find the parent folder (results folder)
+            parent_folder = os.path.dirname(self.output_path)
 
+        pattern = re.compile(r"recording(\d+)", re.IGNORECASE)
+        all_summaries = []
+
+        for entry in os.listdir(parent_folder):
+            full_path = os.path.join(parent_folder, entry)
+            if os.path.isdir(full_path):
+                match = pattern.match(entry)
+                if match:
+                    recording_number = int(match.group(1))
+                    csv_path = os.path.join(full_path, f"{self.name}_summary.csv")
+
+                    if os.path.exists(csv_path):
+                        df = pd.read_csv(csv_path)
+                        df["Recording Number"] = recording_number
+                        all_summaries.append(df)
+                    else:
+                        print(f"No summary.csv found in {csv_path}")
+
+        if all_summaries:
+            combined_df = pd.concat(all_summaries, ignore_index=True)
+            return combined_df
+        else:
+            print("No CSV files loaded.")
+            return pd.DataFrame()
+        
+    def general_summary(self):
+        save_path = os.path.abspath(os.path.join(self.output_path, os.pardir))
+        survival_path = os.path.join(save_path, "surivival.png")
+
+        df = self.load_data()
+
+        # SURVIVAL BY ZONE VS TIME
+
+
+
+        df['Zone ID'] = df['Zone ID'].str.strip()
+
+        # Group by both Zone ID and Recording Number
+        grouped = df.groupby(['Zone ID', 'Recording Number'], as_index=False)['Survival %'].mean()
+
+        # Pivot to get Zone IDs as separate lines
+        pivot = grouped.pivot(index='Recording Number', columns='Zone ID', values='Survival %')
+
+        # Plot
+        plt.figure(figsize=(10, 6))
+        for column in pivot.columns:
+            plt.plot(pivot.index, pivot[column], marker='o', label=column)
+
+        plt.title("Survival % by Zone Over Recordings")
+        plt.xlabel("Recording Number")
+        plt.ylabel("Survival %")
+        plt.legend(title="Zone ID", bbox_to_anchor=(1.05, 1), loc='upper left')
+        plt.xticks(pivot.index)
+        plt.grid(True)
+        plt.tight_layout()
+        plt.savefig(survival_path)
+        plt.close()
