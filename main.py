@@ -117,4 +117,4 @@ def predict(folder_path, name, num_per_plate, reanalyze=False, discobox_run=Fals
     # plot variablitiy distribution collected so far
     # Load the CSV file
 
-predict("Datasets/writing_test2/", "test", 1, reanalyze=False)
+predict("Datasets/reading_test2/", "test", 1, reanalyze=False)

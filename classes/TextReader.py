@@ -29,29 +29,25 @@ class TextReader:
         return generated_text.strip()
 
 
-def has_text(img: np.ndarray, threshold: float = 0.01, dark_pixel_value: int = 200) -> bool:
+
+def has_text(img: np.ndarray, threshold: float = 0.02) -> bool:
     """
-    Check if the given RGB image likely contains text based on dark pixel ratio.
+    Check if the image likely contains text by detecting structured edges.
 
     Args:
         img: np.ndarray, RGB image (H x W x 3), dtype=uint8.
-        threshold: float, ratio of dark pixels below which we say no text.
-        dark_pixel_value: int, pixel intensity threshold to consider as "dark" (0-255).
+        threshold: float, minimum edge density to consider as text.
 
     Returns:
         bool: True if text likely present, False otherwise.
     """
-
-    # Convert to grayscale
     gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
 
-    # Threshold to binary image: text pixels should be darker than dark_pixel_value
-    _, binary = cv2.threshold(gray, dark_pixel_value, 255, cv2.THRESH_BINARY_INV)
+    # Use Canny edge detector to find stroke-like edges
+    edges = cv2.Canny(gray, 50, 150)
 
-    # Calculate ratio of dark pixels (potential text pixels)
-    dark_ratio = np.sum(binary > 0) / (binary.shape[0] * binary.shape[1])
+    # Ratio of edge pixels to total image size
+    edge_ratio = np.sum(edges > 0) / edges.size
+    
 
-    # Debug: print(dark_ratio)
-
-    # If dark pixels exceed threshold, we say text is present
-    return dark_ratio > threshold
+    return edge_ratio > threshold
