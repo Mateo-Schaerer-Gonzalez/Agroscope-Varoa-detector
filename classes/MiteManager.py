@@ -4,10 +4,10 @@ from classes.Rect import TextZone, MiteZone
 from classes.TextReader import TextReader
 from PIL import Image
 from classes.TextReader import has_text
+from utils.tools import read_counter
 import pandas as pd
 from openpyxl import load_workbook
 from openpyxl.drawing.image import Image as OpenpyxlImage
-import glob
 import re
 import pickle
 
@@ -81,8 +81,8 @@ class MiteManager:
 
     def get_zones(self, coordinate_file, recording_count):
         zones_file = os.path.join(os.path.dirname(coordinate_file), "zones.pkl")
-
-        if recording_count <= 1:
+      
+        if read_counter() <= 1:
             textReader = TextReader() #load the text reader
             print("textReader loaded...")
 
@@ -116,7 +116,6 @@ class MiteManager:
                                 miteZone.add_text_zone(textZone)
                                 break
 
-               # ✅ Save zones to file for reuse
             with open(zones_file, "wb") as f:
                 pickle.dump(self.zones, f)
             print(f"Zones saved to {zones_file}")
@@ -168,8 +167,8 @@ class MiteManager:
             
             for mite in zone.mites:
                 mite.checkAlive()
-                
-         
+
+    
 
 
     def Excelsummary(self):
@@ -319,30 +318,47 @@ class MiteManager:
         survival_path = os.path.join(save_path, "surivival.png")
 
         df = self.load_data()
-
+        
         # SURVIVAL BY ZONE VS TIME
 
+        plt.figure(figsize=self.img_size)
+        # Loop through each zone and plot survival across recordings
+        for zone_id, zone_data in df.groupby('Zone ID'):
+            plt.plot(zone_data['Recording Number'], zone_data['Survival %'], marker='o', label=f'Zone {zone_id}')
 
-
-        df['Zone ID'] = df['Zone ID'].str.strip()
-
-        # Group by both Zone ID and Recording Number
-        grouped = df.groupby(['Zone ID', 'Recording Number'], as_index=False)['Survival %'].mean()
-
-        # Pivot to get Zone IDs as separate lines
-        pivot = grouped.pivot(index='Recording Number', columns='Zone ID', values='Survival %')
-
-        # Plot
-        plt.figure(figsize=(10, 6))
-        for column in pivot.columns:
-            plt.plot(pivot.index, pivot[column], marker='o', label=column)
-
-        plt.title("Survival % by Zone Over Recordings")
-        plt.xlabel("Recording Number")
-        plt.ylabel("Survival %")
-        plt.legend(title="Zone ID", bbox_to_anchor=(1.05, 1), loc='upper left')
-        plt.xticks(pivot.index)
+        plt.xlabel('Recording Number')
+        plt.ylabel('Survival Rate (%)')
+        plt.title('Survival Rate over Time by Zone')
+        plt.ylim(0, 100) 
+        plt.legend(title='Zone ID')
         plt.grid(True)
         plt.tight_layout()
         plt.savefig(survival_path)
         plt.close()
+
+        print("general summary saved to", survival_path)
+
+    def variability_distribution_graph(self):
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+
+        filename = os.path.join(script_dir, "variabilites.csv")
+
+
+        save_path = os.path.abspath(os.path.join(self.output_path, os.pardir))
+        figure_path = os.path.join(save_path, "total_variability_Distribution.png")
+        df = pd.read_csv(filename)
+
+        # Plot histogram for each group (Alive True/False)
+        plt.figure(figsize=self.img_size)
+
+        for alive_status, group in df.groupby('Alive'):
+            plt.hist(group['Variability'], bins=20, alpha=0.6, label=f'Alive={alive_status}')
+
+        plt.xlabel('Variability')
+        plt.ylabel('Frequency')
+        plt.title('Histogram of Variability grouped by Alive status')
+        plt.legend()
+        plt.savefig(figure_path)
+        plt.close()
+
+    

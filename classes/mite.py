@@ -2,6 +2,8 @@ import numpy as np
 import cv2
 import cv2
 from classes.Rect import Rect
+import csv
+import os
 
 class Mite:
     def __init__(self, yolo_bbox, frames, threshold=5.0):
@@ -20,7 +22,7 @@ class Mite:
         self.roi_series = self.bbox.get_ROI(frames)
         self.variability = None
         self.assigned_rect = None
-        self.alive = True
+        self.alive = False
 
        
 
@@ -36,10 +38,26 @@ class Mite:
 
 
         # update alive status based on variability
-        self.alive = self.variability > self.threshold #above threshold is alive, below is dead
+        # self.alive = self.variability > self.threshold #above threshold is alive, below is dead
         self.bbox.color = (0, 255, 0) if self.alive else (0, 0, 255)
 
-        return self.alive, np.var(roi_gray, axis=0).mean() #pixel variace across frames
+        #save the data
+    
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+
+        filename = os.path.join(script_dir, "variabilites.csv")
+        with open(filename, mode='a', newline='') as file:
+            writer = csv.writer(file)
+
+         
+
+            # Write the new row
+            writer.writerow([self.alive, self.variability])
+                        
+         
+
+
+        return self.alive, self.variability #pixel variace across frames
     
     def draw(self, image, thickness=2, label=None):
         """

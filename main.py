@@ -50,6 +50,9 @@ def reanalyze_recording(results_base, num_per_plate, detector, frames_by_recordi
     # general summary:
     stage.general_summary()
     reset_counter()
+
+    #total variability distibution of all collected mites
+    stage.variability_distribution_graph()
    
 
 def analyze_recording(results_base, num_per_plate, detector, frames, discobox_run, name, recording_count):
@@ -63,8 +66,6 @@ def analyze_recording(results_base, num_per_plate, detector, frames, discobox_ru
 
     results_folder = os.path.join(results_base, "results", f"recording{count}")
     os.makedirs(results_folder, exist_ok=True)
-
-
 
     # analysis
     detector.run_detection(frames[0])
@@ -88,11 +89,10 @@ def analyze_recording(results_base, num_per_plate, detector, frames, discobox_ru
     if count >= recording_count:
         stage.general_summary()
         reset_counter()
-    
 
-
-    
-
+        #total variability distibution of all collected mites
+        stage.variability_distribution_graph()
+        
 
 def predict(folder_path, name, num_per_plate, reanalyze=False, discobox_run=False, num_recordings=2):
     detector = Detector()
@@ -112,11 +112,9 @@ def predict(folder_path, name, num_per_plate, reanalyze=False, discobox_run=Fals
 
     else:
         analyze_recording(results_base, num_per_plate, detector, frames, discobox_run, name, num_recordings)
-        
-
-   
 
     
+    # plot variablitiy distribution collected so far
+    # Load the CSV file
 
-
-#predict("Datasets/writing_test2/", "test", 1, reanalyze=False)
+predict("Datasets/writing_test2/", "test", 1, reanalyze=False)
