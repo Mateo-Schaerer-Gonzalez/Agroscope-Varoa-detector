@@ -345,20 +345,41 @@ class MiteManager:
 
 
         save_path = os.path.abspath(os.path.join(self.output_path, os.pardir))
-        figure_path = os.path.join(save_path, "total_variability_Distribution.png")
+        var_path = os.path.join(save_path, "total_variability_Distribution.png")
+        max_diff_var = os.path.join(save_path, "max_diff_var.png")
+        max_diff = os.path.join(save_path, "max_diff_distribution.png")
         df = pd.read_csv(filename)
 
         # Plot histogram for each group (Alive True/False)
         plt.figure(figsize=self.img_size)
 
         for alive_status, group in df.groupby('Alive'):
-            plt.hist(group['Variability'], bins=20, alpha=0.6, label=f'Alive={alive_status}')
+            plt.hist(group['Variability'], bins=30, alpha=0.6, label=f'{'alive' if alive_status else 'dead'}')
 
         plt.xlabel('Variability')
         plt.ylabel('Frequency')
         plt.title('Histogram of Variability grouped by Alive status')
         plt.legend()
-        plt.savefig(figure_path)
+        plt.savefig(var_path)
         plt.close()
 
-    
+
+        for alive_status, group in df.groupby('Alive'):
+            plt.hist(group['Max_diff_var'], bins=30, alpha=0.6, label=f'{'alive' if alive_status else 'dead'}')
+
+        plt.xlabel('Max_diff_var')
+        plt.ylabel('Frequency')
+        plt.title('Histogram of Max difference variability')
+        plt.legend()
+        plt.savefig(max_diff_var)
+        plt.close()
+
+        for alive_status, group in df.groupby('Alive'):
+            plt.hist(group['Max_diff'], bins=30, alpha=0.6, label=f'{'alive' if alive_status else 'dead'}')
+
+        plt.xlabel('Max_diff')
+        plt.ylabel('Frequency')
+        plt.title('Histogram of Max difference')
+        plt.legend()
+        plt.savefig(max_diff)
+        plt.close()
