@@ -23,6 +23,8 @@ class Mite:
         self.variability = None
         self.assigned_rect = None
         self.alive = False
+        self.max_var = None
+        self.max_diff = 0
 
        
 
@@ -33,6 +35,14 @@ class Mite:
 
         # Convert to grayscale if needed
         roi_gray = np.mean(self.roi_series, axis=-1)  # Average across color channels
+
+        # Get pixel-wise range across the stack
+        pixel_diff = self.roi_series.max(axis=0) - self.roi_series.min(axis=0)
+
+        # Get the variance of these pixel-wise differences
+        self.max_var = np.var(pixel_diff)
+
+        self.max_diff = np.max(pixel_diff)
 
         self.variability = np.var(roi_gray, axis=0).mean()
 
@@ -52,7 +62,7 @@ class Mite:
          
 
             # Write the new row
-            writer.writerow([self.alive, self.variability])
+            writer.writerow([self.alive, self.variability, self.max_var, self.max_diff])
                         
          
 

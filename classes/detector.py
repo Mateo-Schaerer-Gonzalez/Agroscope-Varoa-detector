@@ -10,7 +10,7 @@ class Detector:
             "model_weights",
             "runs",
             "detect",
-            "fine_tuned_varro_model",
+            "fine_tuned_varro_model9",
             "weights",
             "best.pt"
         )  # Path to your fine-tuned model
@@ -48,13 +48,14 @@ class Detector:
 
 if __name__ == '__main__':
     if False:
+        import torch
         # Check if GPU is available
         print("CUDA available:", torch.cuda.is_available())
         print("GPU Name:", torch.cuda.get_device_name(0) if torch.cuda.is_available() else "N/A")
 
 
         # Load a pretrained model (or your existing one)
-        model = YOLO("best.pt") 
+        model = YOLO("../model_weights/best.pt") 
         
 
         #freeze first 100 layers of the model
