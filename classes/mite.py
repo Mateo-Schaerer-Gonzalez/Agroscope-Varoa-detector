@@ -28,43 +28,38 @@ class Mite:
 
        
 
-    def checkAlive(self):
+    def checkAlive(self, Ground_Truth):
         
         if self.roi_series is None:
             raise ValueError("ROI series is not set. Call add_ROI() first.")
 
-                # Step 1: Convert to grayscale if needed
-        roi_gray = np.mean(self.roi_series, axis=-1)  # shape: (T, H, W)
 
-        # Step 2: Compute absolute frame-to-frame differences
-        frame_diffs = np.abs(np.diff(roi_gray, axis=0))  # shape: (T-1, H, W)
 
-    
+  
         # Get pixel-wise range across the stack
-        pixel_diff = np.mean(self.roi_series.max(axis=0) - self.roi_series.min(axis=0), axis = -1)
+        pixel_diff_grey = np.mean(self.roi_series.max(axis=0) - self.roi_series.min(axis=0), axis = -1)
 
 
        
 
 
-        # Step 2: Find pixel with maximum range
-        max_coord = np.unravel_index(np.argmax(pixel_diff), pixel_diff.shape)
+        max_coord = np.unravel_index(np.argmax(pixel_diff_grey), pixel_diff_grey.shape)
         x, y = max_coord
 
 
         x_min = max(x - self.local_radius, 0)
-        x_max = min(x + self.local_radius + 1, pixel_diff.shape[0])
+        x_max = min(x + self.local_radius + 1, pixel_diff_grey.shape[0])
         y_min = max(y - self.local_radius, 0)
-        y_max = min(y + self.local_radius + 1, pixel_diff.shape[1])
+        y_max = min(y + self.local_radius + 1, pixel_diff_grey.shape[1])
 
-        local_patch = pixel_diff[x_min:x_max, y_min:y_max]
+        local_patch = pixel_diff_grey[x_min:x_max, y_min:y_max]
 
-        # Step 4: Get top 3 pixel values in the patch
+        # Get top 3 pixel values in the patch
         top_3_vals = np.sort(local_patch.flatten())[-3:]
         self.local_avg_diff = np.mean(top_3_vals)
 
 
-        self.max_diff = np.max(pixel_diff)
+        self.max_diff = np.max(pixel_diff_grey)
 
 
 
@@ -77,13 +72,14 @@ class Mite:
         script_dir = os.path.dirname(os.path.abspath(__file__))
 
         filename = os.path.join(script_dir, "variabilites.csv")
+
         with open(filename, mode='a', newline='') as file:
             writer = csv.writer(file)
 
          
 
             # Write the new row
-            writer.writerow([self.alive, self.max_diff, self.local_avg_diff])
+            writer.writerow([Ground_Truth, self.alive, self.max_diff, self.local_avg_diff])
                         
          
 

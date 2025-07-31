@@ -12,7 +12,7 @@ from classes.MiteManager import MiteManager
 from utils.tools import read_counter, reset_counter, write_counter
 
 
-def reanalyze_recording(results_base, num_per_plate, detector, frames_by_recording, discobox_run, name):
+def reanalyze_recording(results_base, num_per_plate, detector, frames_by_recording, discobox_run, name, Ground_truth):
     i = 1
     while True:
         reanalyze_path = os.path.join(results_base, f"reanalysis{i}")
@@ -43,7 +43,7 @@ def reanalyze_recording(results_base, num_per_plate, detector, frames_by_recordi
         discobox_run=discobox_run,
         recording_count= i + 1)
 
-        stage.mite_variability()
+        stage.mite_variability(Ground_truth)
         stage.draw(frames[0], thickness=2)
         stage.Excelsummary()
 
@@ -55,7 +55,7 @@ def reanalyze_recording(results_base, num_per_plate, detector, frames_by_recordi
     stage.variability_distribution_graph()
    
 
-def analyze_recording(results_base, num_per_plate, detector, frames, discobox_run, name, recording_count):
+def analyze_recording(results_base, num_per_plate, detector, frames, discobox_run, name, recording_count, Ground_truth):
 
     # count how many recordings have been made
     count = read_counter()
@@ -82,7 +82,7 @@ def analyze_recording(results_base, num_per_plate, detector, frames, discobox_ru
         recording_count = recording_count
     )
 
-    stage.mite_variability()
+    stage.mite_variability(Ground_truth)
     stage.draw(frames[0], thickness=2)
     stage.Excelsummary()
 
@@ -94,9 +94,11 @@ def analyze_recording(results_base, num_per_plate, detector, frames, discobox_ru
         stage.distribution_graph()
         
 
-def predict(folder_path, name, num_per_plate, reanalyze=False, discobox_run=False, num_recordings=3):
+def predict(folder_path, name, num_per_plate, reanalyze=False, discobox_run=False, num_recordings=1):
     detector = Detector()
     frames = get_frames(folder_path, discobox_run, reanalyze)
+
+    Ground_truth = False #alive or dead
    
 
      # Run detection on first frame
@@ -108,13 +110,13 @@ def predict(folder_path, name, num_per_plate, reanalyze=False, discobox_run=Fals
 
  
     if reanalyze:
-        reanalyze_recording(results_base, num_per_plate, detector, frames, discobox_run, name)
+        reanalyze_recording(results_base, num_per_plate, detector, frames, discobox_run, name, Ground_truth)
 
     else:
-        analyze_recording(results_base, num_per_plate, detector, frames, discobox_run, name, num_recordings)
+        analyze_recording(results_base, num_per_plate, detector, frames, discobox_run, name, num_recordings, Ground_truth)
 
     
     # plot variablitiy distribution collected so far
     # Load the CSV file
 
-#predict("Datasets/alive", "test", 1, reanalyze=False)
+#predict("Datasets/dead3", "test", 1, reanalyze=False)

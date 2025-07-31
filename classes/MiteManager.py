@@ -161,12 +161,12 @@ class MiteManager:
         print("got mites:", len(boxes))
         print("assigned mites:", assigned)
 
-    def mite_variability(self):
+    def mite_variability(self, Ground_truth):
         for zone in self.zones:
             print(f"Zone {zone.zone_id} has {len(zone.mites)} mites.")
             
             for mite in zone.mites:
-                mite.checkAlive()
+                mite.checkAlive(Ground_truth)
 
     
 
@@ -353,7 +353,7 @@ class MiteManager:
         # Plot histogram for each group (Alive True/False)
         plt.figure(figsize=self.img_size)
 
-        for alive_status, group in df.groupby('Alive'):
+        for alive_status, group in df.groupby('Ground_truth'):
             plt.hist(group['max_diff'], bins=30, alpha=0.6, label=f"{'alive' if alive_status else 'dead'}")
 
         
@@ -366,7 +366,7 @@ class MiteManager:
         plt.close()
 
 
-        for alive_status, group in df.groupby('Alive'):
+        for alive_status, group in df.groupby('Ground_truth'):
             plt.hist(group['local_diff'], bins=30, alpha=0.6, label=f"{'alive' if alive_status else 'dead'}")
 
         
