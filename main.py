@@ -91,10 +91,10 @@ def analyze_recording(results_base, num_per_plate, detector, frames, discobox_ru
         reset_counter()
 
         #total variability distibution of all collected mites
-        stage.variability_distribution_graph()
+        stage.distribution_graph()
         
 
-def predict(folder_path, name, num_per_plate, reanalyze=False, discobox_run=False, num_recordings=2):
+def predict(folder_path, name, num_per_plate, reanalyze=False, discobox_run=False, num_recordings=3):
     detector = Detector()
     frames = get_frames(folder_path, discobox_run, reanalyze)
    
@@ -117,4 +117,4 @@ def predict(folder_path, name, num_per_plate, reanalyze=False, discobox_run=Fals
     # plot variablitiy distribution collected so far
     # Load the CSV file
 
-predict("Datasets/reading_test2/", "test", 1, reanalyze=False)
+#predict("Datasets/alive", "test", 1, reanalyze=False)

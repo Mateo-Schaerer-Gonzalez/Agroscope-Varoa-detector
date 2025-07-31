@@ -1,16 +1,5 @@
 Zone ID,Total Mites,Alive Mites,Dead Mites,Survival %
-tests .,0,0,0,0.0
-test is,0,0,0,0.0
-test B .,0,0,0,0.0
-tost B .,0,0,0,0.0
-tost is .,1,0,1,0.0
-tost is,0,0,0,0.0
-test is,0,0,0,0.0
-test 3 .,0,0,0,0.0
-test is .,1,0,1,0.0
-test B .,0,0,0,0.0
-test a,0,0,0,0.0
-Test is,1,0,1,0.0
-tast is,0,0,0,0.0
-tests .,0,0,0,0.0
-test is,0,0,0,0.0
+tests,6,6,0,100.0
+venom 2,11,11,0,100.0
+respside .,9,9,0,100.0
+tost is .,6,6,0,100.0

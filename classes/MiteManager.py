@@ -338,60 +338,48 @@ class MiteManager:
 
         print("general summary saved to", survival_path)
 
-    def variability_distribution_graph(self):
+    def distribution_graph(self):
         script_dir = os.path.dirname(os.path.abspath(__file__))
 
         filename = os.path.join(script_dir, "variabilites.csv")
 
 
         save_path = os.path.abspath(os.path.join(self.output_path, os.pardir))
-        var_path = os.path.join(save_path, "total_variability_Distribution.png")
-        max_diff_var = os.path.join(save_path, "max_diff_var.png")
-        max_diff = os.path.join(save_path, "max_diff_distribution.png")
-        cdf_path = os.path.join(save_path, "cdf_distribution.png")
+        local_diff = os.path.join(save_path, "local_diff.png")
+        max_diff = os.path.join(save_path, "max_diff.png")
+       
         df = pd.read_csv(filename)
 
         # Plot histogram for each group (Alive True/False)
         plt.figure(figsize=self.img_size)
 
         for alive_status, group in df.groupby('Alive'):
-            plt.hist(group['Variability'], bins=30, alpha=0.6, label=f'{'alive' if alive_status else 'dead'}')
+            plt.hist(group['max_diff'], bins=30, alpha=0.6, label=f"{'alive' if alive_status else 'dead'}")
 
-        plt.xlabel('Variability')
+        
+
+        plt.xlabel('max difference')
         plt.ylabel('Frequency')
-        plt.title('Histogram of Variability')
-        plt.legend()
-        plt.savefig(var_path)
-        plt.close()
-
-
-        for alive_status, group in df.groupby('Alive'):
-            plt.hist(group['Max_diff_var'], bins=30, alpha=0.6, label=f'{'alive' if alive_status else 'dead'}')
-
-        plt.xlabel('Max_diff_var')
-        plt.ylabel('Frequency')
-        plt.title('Histogram of Max difference variability')
-        plt.legend()
-        plt.savefig(max_diff_var)
-        plt.close()
-
-        for alive_status, group in df.groupby('Alive'):
-            plt.hist(group['Max_diff'], bins=30, alpha=0.6, label=f'{'alive' if alive_status else 'dead'}')
-
-        plt.xlabel('Max_diff')
-        plt.ylabel('Frequency')
-        plt.title('Histogram of Max difference')
+        plt.title('Histogram of local difference')
         plt.legend()
         plt.savefig(max_diff)
         plt.close()
 
 
         for alive_status, group in df.groupby('Alive'):
-            plt.hist(group['cdf'], bins=30, alpha=0.6, label=f'{'alive' if alive_status else 'dead'}')
+            plt.hist(group['local_diff'], bins=30, alpha=0.6, label=f"{'alive' if alive_status else 'dead'}")
 
-        plt.xlabel('cumulative frame difference')
+        
+
+        plt.xlabel('local difference')
         plt.ylabel('Frequency')
-        plt.title('Histogram of Cumulative frame difference')
+        plt.title('Histogram of local difference')
         plt.legend()
-        plt.savefig(cdf_path)
+        plt.savefig(local_diff)
         plt.close()
+
+
+       
+
+
+       

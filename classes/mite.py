@@ -18,14 +18,13 @@ class Mite:
         """
         self.bbox = Rect(*yolo_bbox)  # Create a Rect object for the bounding box
         self.center = ((yolo_bbox[0] + yolo_bbox[2]) // 2, (yolo_bbox[1] + yolo_bbox[3]) // 2)  # (x_center, y_center)
-        self.threshold = 0.5
+        self.threshold = 20
         self.roi_series = self.bbox.get_ROI(frames)
-        self.variability = None
         self.assigned_rect = None
-        self.alive = False
-        self.max_var = None
-        self.max_diff = 0
-        self.cfd = 0
+        self.alive = True
+        self.local_avg_diff = 0
+        self.max_diff  = 0
+        self.local_radius = 5
 
        
 
@@ -34,29 +33,43 @@ class Mite:
         if self.roi_series is None:
             raise ValueError("ROI series is not set. Call add_ROI() first.")
 
-        # Convert to grayscale if needed
-        roi_gray = np.mean(self.roi_series, axis=-1)  # Average across color channels
+                # Step 1: Convert to grayscale if needed
+        roi_gray = np.mean(self.roi_series, axis=-1)  # shape: (T, H, W)
 
+        # Step 2: Compute absolute frame-to-frame differences
+        frame_diffs = np.abs(np.diff(roi_gray, axis=0))  # shape: (T-1, H, W)
+
+    
         # Get pixel-wise range across the stack
-        pixel_diff = self.roi_series.max(axis=0) - self.roi_series.min(axis=0)
+        pixel_diff = np.mean(self.roi_series.max(axis=0) - self.roi_series.min(axis=0), axis = -1)
 
-        # Get the variance of these pixel-wise differences
-        self.max_var = np.var(pixel_diff)
+
+       
+
+
+        # Step 2: Find pixel with maximum range
+        max_coord = np.unravel_index(np.argmax(pixel_diff), pixel_diff.shape)
+        x, y = max_coord
+
+
+        x_min = max(x - self.local_radius, 0)
+        x_max = min(x + self.local_radius + 1, pixel_diff.shape[0])
+        y_min = max(y - self.local_radius, 0)
+        y_max = min(y + self.local_radius + 1, pixel_diff.shape[1])
+
+        local_patch = pixel_diff[x_min:x_max, y_min:y_max]
+
+        # Step 4: Get top 3 pixel values in the patch
+        top_3_vals = np.sort(local_patch.flatten())[-3:]
+        self.local_avg_diff = np.mean(top_3_vals)
+
 
         self.max_diff = np.max(pixel_diff)
 
-        self.variability = np.var(roi_gray, axis=0).mean()
-
-
-        # Step 1: Frame-to-frame absolute difference
-        frame_diffs = np.abs(np.diff(roi_gray, axis=0))  # shape: (T-1, H, W)
-
-        T, H, W = roi_gray.shape
-        self.cfd = np.sum(frame_diffs) / ((T - 1) * H * W)
 
 
         # update alive status based on variability
-        # self.alive = self.variability > self.threshold #above threshold is alive, below is dead
+        self.alive = 0.8 * self.max_diff + 0.2 * self.local_avg_diff > self.threshold #above threshold is alive, below is dead
         self.bbox.color = (0, 255, 0) if self.alive else (0, 0, 255)
 
         #save the data
@@ -70,12 +83,12 @@ class Mite:
          
 
             # Write the new row
-            writer.writerow([self.alive, self.variability, self.max_var, self.max_diff, self.cfd])
+            writer.writerow([self.alive, self.max_diff, self.local_avg_diff])
                         
          
 
 
-        return self.alive, self.variability #pixel variace across frames
+        return self.alive, self.local_avg_diff #pixel variace across frames
     
     def draw(self, image, thickness=2, label=None):
         """
