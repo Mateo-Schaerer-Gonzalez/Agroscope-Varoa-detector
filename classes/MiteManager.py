@@ -348,6 +348,7 @@ class MiteManager:
         var_path = os.path.join(save_path, "total_variability_Distribution.png")
         max_diff_var = os.path.join(save_path, "max_diff_var.png")
         max_diff = os.path.join(save_path, "max_diff_distribution.png")
+        cdf_path = os.path.join(save_path, "cdf_distribution.png")
         df = pd.read_csv(filename)
 
         # Plot histogram for each group (Alive True/False)
@@ -358,7 +359,7 @@ class MiteManager:
 
         plt.xlabel('Variability')
         plt.ylabel('Frequency')
-        plt.title('Histogram of Variability grouped by Alive status')
+        plt.title('Histogram of Variability')
         plt.legend()
         plt.savefig(var_path)
         plt.close()
@@ -382,4 +383,15 @@ class MiteManager:
         plt.title('Histogram of Max difference')
         plt.legend()
         plt.savefig(max_diff)
+        plt.close()
+
+
+        for alive_status, group in df.groupby('Alive'):
+            plt.hist(group['cdf'], bins=30, alpha=0.6, label=f'{'alive' if alive_status else 'dead'}')
+
+        plt.xlabel('cumulative frame difference')
+        plt.ylabel('Frequency')
+        plt.title('Histogram of Cumulative frame difference')
+        plt.legend()
+        plt.savefig(cdf_path)
         plt.close()

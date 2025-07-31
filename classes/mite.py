@@ -25,6 +25,7 @@ class Mite:
         self.alive = False
         self.max_var = None
         self.max_diff = 0
+        self.cfd = 0
 
        
 
@@ -47,6 +48,13 @@ class Mite:
         self.variability = np.var(roi_gray, axis=0).mean()
 
 
+        # Step 1: Frame-to-frame absolute difference
+        frame_diffs = np.abs(np.diff(roi_gray, axis=0))  # shape: (T-1, H, W)
+
+        T, H, W = roi_gray.shape
+        self.cfd = np.sum(frame_diffs) / ((T - 1) * H * W)
+
+
         # update alive status based on variability
         # self.alive = self.variability > self.threshold #above threshold is alive, below is dead
         self.bbox.color = (0, 255, 0) if self.alive else (0, 0, 255)
@@ -62,7 +70,7 @@ class Mite:
          
 
             # Write the new row
-            writer.writerow([self.alive, self.variability, self.max_var, self.max_diff])
+            writer.writerow([self.alive, self.variability, self.max_var, self.max_diff, self.cfd])
                         
          
 
