@@ -11,43 +11,40 @@ class TextReader:
         self.model.to(self.device)
         self.model.eval()
 
-    def read(self,image):
+    def read(self, image):
         """
         There are 3 main models to choose from, small, base and large. 
         Some other fine-tuned models: IAM Handwritten, SROIE Receipts
         """
 
-        # Check for GPU availability
-
         pixel_values = self.processor(image, return_tensors="pt").pixel_values.to(self.device)
-        generated_ids = self.model.generate(pixel_values, 
-                                            max_new_tokens=30)
-        
-        
+
+        outputs = self.model.generate(
+            pixel_values,
+            max_new_tokens=30,
+            output_scores=True,
+            return_dict_in_generate=True
+        )
+
+        generated_ids = outputs.sequences
+        scores = outputs.scores  # list of logits for each generated token step
+
         generated_text = self.processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
-        print(generated_text)
-        return generated_text.strip()
+
+        probs = []
+        for i, logits in enumerate(scores):
+            softmax_probs = torch.softmax(logits, dim=-1)
+            token_id = generated_ids[0, i + 1]  # +1 because first token is input
+            token_prob = softmax_probs[0, token_id].item()
+            probs.append(token_prob)
+
+        avg_confidence = sum(probs) / len(probs) if probs else 0
+        CONFIDENCE_THRESHOLD = 0.7
+
+        if avg_confidence < CONFIDENCE_THRESHOLD:
+            return "EMPTY"
+        else:
+            print(generated_text)
+            return generated_text.strip()
 
 
-
-def has_text(img: np.ndarray, threshold: float = 0.02) -> bool:
-    """
-    Check if the image likely contains text by detecting structured edges.
-
-    Args:
-        img: np.ndarray, RGB image (H x W x 3), dtype=uint8.
-        threshold: float, minimum edge density to consider as text.
-
-    Returns:
-        bool: True if text likely present, False otherwise.
-    """
-    gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
-
-    # Use Canny edge detector to find stroke-like edges
-    edges = cv2.Canny(gray, 50, 150)
-
-    # Ratio of edge pixels to total image size
-    edge_ratio = np.sum(edges > 0) / edges.size
-    
-
-    return edge_ratio > threshold

@@ -3,7 +3,6 @@ from classes.mite import Mite
 from classes.Rect import TextZone, MiteZone
 from classes.TextReader import TextReader
 from PIL import Image
-from classes.TextReader import has_text
 from utils.tools import read_counter
 import pandas as pd
 from openpyxl import load_workbook
@@ -15,12 +14,14 @@ import matplotlib
 matplotlib.use('Agg')  # Must be set before importing pyplot
 
 
+from matplotlib.backends.backend_pdf import PdfPages
+
 
 import matplotlib.pyplot as plt
 import os
 
 class MiteManager:
-    #TODO: look at reanchoring the images in excel file
+    
 
     def __init__(self, coordinate_file, mites_detection, 
                  frames,  name, output_folder, reanalyze=0, discobox_run=False, recording_count=1):
@@ -107,11 +108,10 @@ class MiteManager:
                             if textZone in miteZone:
                                 textZone.parent_rect = miteZone
                                 img = textZone.get_ROI(self.frames)[0]
-                                if has_text(img):
-                                    img_PIL = Image.fromarray(img).convert("RGB")  # Get the image from the ROI
-                                    textZone.text = textReader.read(img_PIL)
-                                else:
-                                    textZone.text = "EMPTY"
+                                
+                                img_PIL = Image.fromarray(img).convert("RGB")  # Get the image from the ROI
+                                textZone.text = textReader.read(img_PIL)
+                                
 
                                 miteZone.add_text_zone(textZone)
                                 break
@@ -126,9 +126,7 @@ class MiteManager:
                 print(f"Zones loaded from {zones_file}")
             else:
                 raise FileNotFoundError(f"No saved zone file found at {zones_file}")
-
-
-               
+     
 
 
     def getMites(self, result, frames, zones):
@@ -171,20 +169,13 @@ class MiteManager:
     
 
 
-    def Excelsummary(self):
-        # Find all recording subfolders
-       
-        # Update file paths to use the results folder
-        filename = os.path.join(self.output_path, "summary.xlsx")
+    def get_summary_data(self):
+
         csv_path = os.path.join(self.output_path, "summary.csv")
-        image_path = os.path.join(self.output_path, "frame_0.jpg")
-        hist_path = os.path.join(self.output_path, "variability_histogram.png")
-        survival_path = os.path.join(self.output_path, "survival_path.png")
-        
 
         # Step 1: Prepare the data
         summary_data = []
-        all_variabilities = []
+        all_maxdiff = []
 
         for zone in self.zones:
             if zone.zone_id == "EMPTY":
@@ -197,8 +188,7 @@ class MiteManager:
 
             # Collect variability values
             for mite in zone.mites:
-                if hasattr(mite, "variability"):
-                    all_variabilities.append(mite.variability)
+                all_maxdiff.append(mite.max_diff)
 
             summary_data.append({
                 "Zone ID": zone.zone_id,
@@ -208,79 +198,90 @@ class MiteManager:
                 "Survival %": round(survival_pct, 2)
             })
 
-        # Step 2: Export summary to Excel
-        df = pd.DataFrame(summary_data)
-        # save for genral summary:
-        df.to_csv(csv_path, index=False)
+            df = pd.DataFrame(summary_data)
 
+            df.to_csv(csv_path, index=False)
 
+        return df, all_maxdiff
+    
 
-        df.to_excel(filename, index=False)
+    def make_survival_graph(self,summary_data, all_maxdiff):
+        out_path = os.path.join(self.output_path, "survival.png")
 
-        # Step 3: Add first image if it exists
-        wb = load_workbook(filename)
-        ws = wb.active
+        zone_labels = summary_data['Zone ID']
+       
+        survival_rates = summary_data['Survival %']
 
-        try:
-            img = OpenpyxlImage(image_path)
-            img.width = img.width * 0.5  # scale down to 50%
-            img.height = img.height * 0.5
+        # Create a figure with 2 subplots side by side
+        fig, axes = plt.subplots(1, 2, figsize=(12, 6))
 
-           
-            img.anchor = "G2"
-            ws.add_image(img)
-        except FileNotFoundError:
-            print(f"Image not found at {image_path}, skipping image insertion.")
+        # Subplot 1: Histogram of max pixel difference
+        axes[0].hist(all_maxdiff, bins=20, color="steelblue", edgecolor="black")
+        axes[0].set_title("Distribution of Mite Max Pixel Difference")
+        axes[0].set_xlabel("Max Pixel Difference")
+        axes[0].set_ylabel("Frequency")
+        axes[0].grid(True)
 
-        # Step 4: Create and insert variability histogram
-        if all_variabilities:
-            plt.figure(figsize=self.img_size)
-            plt.hist(all_variabilities, bins=20, color="steelblue", edgecolor="black")
-            plt.title("Distribution of Mite Variability")
-            plt.xlabel("Variability")
-            plt.ylabel("Frequency")
-            plt.tight_layout()
-            plt.savefig(hist_path)
-            plt.close()
+        # Subplot 2: Bar chart of survival rates
+        axes[1].bar(zone_labels, survival_rates, color="mediumseagreen", edgecolor="black")
+        axes[1].set_title("Survival Rate by Zone")
+        axes[1].set_xlabel("Zone ID")
+        axes[1].set_ylabel("Survival %")
+        axes[1].set_ylim(0, 100)
+        axes[1].tick_params(axis='x', rotation=45)
 
-            # Insert histogram image
-            try:
-                hist_img = OpenpyxlImage(hist_path)
-                hist_img.anchor = "W1"  # Placed lower to avoid overlap
-                ws.add_image(hist_img)
-            except FileNotFoundError:
-                print(f"Histogram image not found at {hist_path}, skipping.")
-
-
-        # alive % by zone 
-         
-        
-
-        zone_labels = [row["Zone ID"] for row in summary_data]
-        alive_percentages = [row["Survival %"] for row in summary_data]
-
-        plt.figure(figsize=self.img_size)
-        plt.bar(zone_labels, alive_percentages, color="mediumseagreen", edgecolor="black")
-        plt.title("Survival Rate by Zone")
-        plt.xlabel("Zone ID")
-        plt.ylabel("Survival %")
-        plt.ylim(0, 100)
-        plt.xticks(rotation=45, ha="right")
         plt.tight_layout()
-        plt.savefig(survival_path)
+        plt.savefig(out_path)
         plt.close()
 
-        # Insert bar chart into Excel
-        try:
-            alive_img = OpenpyxlImage(survival_path)
-            alive_img.anchor = "w21"  
-            ws.add_image(alive_img)
-        except FileNotFoundError:
-            print(f"Alive % chart not found at {survival_path}, skipping.")
 
-        # Final save
-        wb.save(filename)
-        print("summary completed sucessfully ...")
+    def create_recording_pdf(self):
+        pdf_path = os.path.join(self.output_path, "recording.pdf")
+        csv_path = os.path.join(self.output_path, "summary.csv")
+        frame_path = os.path.join(self.output_path, "frame_0.jpg")
+        survival_path = os.path.join(self.output_path, "survival.png")
+
+        with PdfPages(pdf_path) as pdf:
+            # A4 size in inches: 8.27 x 11.69
+            fig = plt.figure(figsize=(8.27, 11.69))
+
+            # Adjust height_ratios to make the frame image larger
+            # Example: table smaller, frame bigger, survival moderate
+            n_rows = 3
+            gs = fig.add_gridspec(n_rows, 1, height_ratios=[1, 3, 1.5])
+
+            # --- Section 1: Summary Table ---
+            if os.path.exists(csv_path):
+                df = pd.read_csv(csv_path)
+                ax1 = fig.add_subplot(gs[0])
+                ax1.axis('off')
+                table = ax1.table(cellText=df.values, colLabels=df.columns, loc='center', cellLoc='center')
+                table.auto_set_font_size(False)
+                table.set_fontsize(8)
+                table.scale(1.0, 1.0)
+                ax1.set_title("Zone Survival Summary", fontsize=12, pad=10)
+
+            # --- Section 2: Frame Image (larger) ---
+            if os.path.exists(frame_path):
+                img = plt.imread(frame_path)
+                ax2 = fig.add_subplot(gs[1])
+                ax2.imshow(img)
+                ax2.axis('off')
+                ax2.set_title("Detection output", fontsize=12, pad=10)
+
+            # --- Section 3: Survival Plot ---
+            if os.path.exists(survival_path):
+                img2 = plt.imread(survival_path)
+                ax3 = fig.add_subplot(gs[2])
+                ax3.imshow(img2)
+                ax3.axis('off')
+                ax3.set_title("Survival Rate by Zone", fontsize=12, pad=10)
+
+            plt.tight_layout()
+            pdf.savefig(fig)
+            plt.close(fig)
+
+        print(f"PDF successfully saved to: {pdf_path}")
 
 
     def load_data(self, root_folder=None):
@@ -313,7 +314,8 @@ class MiteManager:
             print("No CSV files loaded.")
             return pd.DataFrame()
         
-    def general_summary(self):
+
+    def make_survival_time_graph(self):
         save_path = os.path.abspath(os.path.join(self.output_path, os.pardir))
         survival_path = os.path.join(save_path, "surivival.png")
 
@@ -336,8 +338,10 @@ class MiteManager:
         plt.savefig(survival_path)
         plt.close()
 
-        print("general summary saved to", survival_path)
+        print("survival time saved to", survival_path)
 
+    
+       
     def distribution_graph(self):
         script_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -354,10 +358,9 @@ class MiteManager:
         plt.figure(figsize=self.img_size)
 
         for alive_status, group in df.groupby('Ground_truth'):
-            plt.hist(group['max_diff'], bins=30, alpha=0.6, label=f"{'alive' if alive_status else 'dead'}")
+            plt.hist(group['max_diff'], bins=30, alpha=0.6, label=alive_status)
 
         
-
         plt.xlabel('max difference')
         plt.ylabel('Frequency')
         plt.title('Histogram of local difference')
@@ -367,7 +370,7 @@ class MiteManager:
 
 
         for alive_status, group in df.groupby('Ground_truth'):
-            plt.hist(group['local_diff'], bins=30, alpha=0.6, label=f"{'alive' if alive_status else 'dead'}")
+            plt.hist(group['local_diff'], bins=30, alpha=0.6, label=alive_status)
 
         
 

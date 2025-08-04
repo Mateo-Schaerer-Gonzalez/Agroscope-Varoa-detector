@@ -45,15 +45,18 @@ def reanalyze_recording(results_base, num_per_plate, detector, frames_by_recordi
 
         stage.mite_variability(Ground_truth)
         stage.draw(frames[0], thickness=2)
-        stage.Excelsummary()
+
+        summary_data, max_diffs =stage.get_summary_data()
+
+
+        stage.make_survival_graph(summary_data, max_diffs)
+
+        # save them to pdf
+        stage.create_recording_pdf()
 
     # general summary:
-    stage.general_summary()
+    stage.make_survival_time_graph()
     reset_counter()
-
-    #total variability distibution of all collected mites
-    stage.variability_distribution_graph()
-   
 
 def analyze_recording(results_base, num_per_plate, detector, frames, discobox_run, name, recording_count, Ground_truth):
 
@@ -84,21 +87,27 @@ def analyze_recording(results_base, num_per_plate, detector, frames, discobox_ru
 
     stage.mite_variability(Ground_truth)
     stage.draw(frames[0], thickness=2)
-    stage.Excelsummary()
+
+    summary_data, max_diffs =stage.get_summary_data()
+
+
+    stage.make_survival_graph(summary_data, max_diffs)
+
+    # save them to pdf
+    stage.create_recording_pdf()
 
     if count >= recording_count:
-        stage.general_summary()
+        stage.make_survival_time_graph()
         reset_counter()
 
-        #total variability distibution of all collected mites
-        stage.distribution_graph()
+       
         
 
 def predict(folder_path, name, num_per_plate, reanalyze=False, discobox_run=False, num_recordings=1):
     detector = Detector()
     frames = get_frames(folder_path, discobox_run, reanalyze)
 
-    Ground_truth = False #alive or dead
+    Ground_truth = "" # alive or dead
    
 
      # Run detection on first frame
@@ -119,4 +128,4 @@ def predict(folder_path, name, num_per_plate, reanalyze=False, discobox_run=Fals
     # plot variablitiy distribution collected so far
     # Load the CSV file
 
-#predict("Datasets/dead3", "test", 1, reanalyze=False)
+predict("Datasets/dead3", "test", 1, reanalyze=False)

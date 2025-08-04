@@ -18,13 +18,22 @@ class Mite:
         """
         self.bbox = Rect(*yolo_bbox)  # Create a Rect object for the bounding box
         self.center = ((yolo_bbox[0] + yolo_bbox[2]) // 2, (yolo_bbox[1] + yolo_bbox[3]) // 2)  # (x_center, y_center)
-        self.threshold = 20
+        
         self.roi_series = self.bbox.get_ROI(frames)
         self.assigned_rect = None
         self.alive = True
         self.local_avg_diff = 0
         self.max_diff  = 0
         self.local_radius = 5
+
+
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+
+        filename = os.path.join(script_dir, "best_threshold.txt")
+
+
+        with open(filename, "r") as f:
+            self.threshold = float(f.readline().strip())
 
        
 
@@ -73,14 +82,15 @@ class Mite:
 
         filename = os.path.join(script_dir, "variabilites.csv")
 
-        with open(filename, mode='a', newline='') as file:
-            writer = csv.writer(file)
+        if Ground_Truth == "alive" or Ground_Truth =="dead":
+            with open(filename, mode='a', newline='') as file:
+                writer = csv.writer(file)
 
-         
+            
 
-            # Write the new row
-            writer.writerow([Ground_Truth, self.alive, self.max_diff, self.local_avg_diff])
-                        
+                # Write the new row
+                writer.writerow([Ground_Truth, f"{'alive' if self.alive else 'dead'}", self.max_diff, self.local_avg_diff])
+                            
          
 
 
