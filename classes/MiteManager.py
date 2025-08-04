@@ -83,7 +83,7 @@ class MiteManager:
     def get_zones(self, coordinate_file, recording_count):
         zones_file = os.path.join(os.path.dirname(coordinate_file), "zones.pkl")
       
-        if read_counter() <= 1:
+        if recording_count <= 1:
             textReader = TextReader() #load the text reader
             print("textReader loaded...")
 
@@ -119,6 +119,7 @@ class MiteManager:
             with open(zones_file, "wb") as f:
                 pickle.dump(self.zones, f)
             print(f"Zones saved to {zones_file}")
+            
         else:
             if os.path.exists(zones_file):
                 with open(zones_file, "rb") as f:
@@ -199,6 +200,16 @@ class MiteManager:
             })
 
             df = pd.DataFrame(summary_data)
+
+
+            df = df.groupby('Zone ID', as_index=False).agg({
+            'Total Mites': 'sum',     # replace with actual column names
+            'Alive Mites': 'sum',
+            'Dead Mites': 'sum',
+            'Survival %': 'mean'
+            })
+
+           
 
             df.to_csv(csv_path, index=False)
 

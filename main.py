@@ -58,7 +58,7 @@ def reanalyze_recording(results_base, num_per_plate, detector, frames_by_recordi
     stage.make_survival_time_graph()
     reset_counter()
 
-def analyze_recording(results_base, num_per_plate, detector, frames, discobox_run, name, recording_count, Ground_truth):
+def analyze_recording(results_base, num_per_plate, detector, frames, discobox_run, name, num_recordings, Ground_truth):
 
     # count how many recordings have been made
     count = read_counter()
@@ -82,7 +82,7 @@ def analyze_recording(results_base, num_per_plate, detector, frames, discobox_ru
         output_folder=results_folder,
         reanalyze=0,
         discobox_run=discobox_run,
-        recording_count = recording_count
+        recording_count = count
     )
 
     stage.mite_variability(Ground_truth)
@@ -96,14 +96,14 @@ def analyze_recording(results_base, num_per_plate, detector, frames, discobox_ru
     # save them to pdf
     stage.create_recording_pdf()
 
-    if count >= recording_count:
+    if count >= num_recordings:
         stage.make_survival_time_graph()
         reset_counter()
 
        
         
 
-def predict(folder_path, name, num_per_plate, reanalyze=False, discobox_run=False, num_recordings=1):
+def predict(folder_path, name, num_per_plate, reanalyze=False, discobox_run=False, num_recordings=2):
     detector = Detector()
     frames = get_frames(folder_path, discobox_run, reanalyze)
 
@@ -128,4 +128,4 @@ def predict(folder_path, name, num_per_plate, reanalyze=False, discobox_run=Fals
     # plot variablitiy distribution collected so far
     # Load the CSV file
 
-predict("Datasets/dead3", "test", 1, reanalyze=False)
+predict("Datasets/dead5", "test", 1, reanalyze=True)
