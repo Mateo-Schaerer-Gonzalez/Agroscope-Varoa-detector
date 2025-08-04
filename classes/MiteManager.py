@@ -27,6 +27,8 @@ class MiteManager:
                  frames,  name, output_folder, reanalyze=0, discobox_run=False, recording_count=1):
         
         print("initializing stage..")
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        self.save_path = os.path.join(base_dir, "mite_manager.plk")
         
 
         if not os.path.isabs(coordinate_file):
@@ -38,7 +40,7 @@ class MiteManager:
                 )
             )
     
-        base_dir = os.path.dirname(os.path.abspath(__file__))
+       
 
         if discobox_run:
             # get the output path
@@ -65,6 +67,17 @@ class MiteManager:
         self.img_size = (15,10)
         
         #check if there is a reanalyze folder:
+
+    def save(self):
+        with open(self.save_path, 'wb') as f:
+            pickle.dump(self, f)
+
+
+    def reset(self):
+        """Delete save file and reset object to default state."""
+        if os.path.exists(self.save_path):
+            os.remove(self.save_path)
+            print(f"Deleted save file: {self.save_path}")
         
 
 

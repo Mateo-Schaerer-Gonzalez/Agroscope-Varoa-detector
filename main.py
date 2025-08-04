@@ -53,10 +53,12 @@ def reanalyze_recording(results_base, num_per_plate, detector, frames_by_recordi
 
         # save them to pdf
         stage.create_recording_pdf()
+        stage.save()
 
     # general summary:
     stage.make_survival_time_graph()
     reset_counter()
+    stage.reset()
 
 def analyze_recording(results_base, num_per_plate, detector, frames, discobox_run, name, num_recordings, Ground_truth):
 
@@ -96,9 +98,12 @@ def analyze_recording(results_base, num_per_plate, detector, frames, discobox_ru
     # save them to pdf
     stage.create_recording_pdf()
 
+    stage.save()
+
     if count >= num_recordings:
         stage.make_survival_time_graph()
         reset_counter()
+        stage.reset()
 
        
         
