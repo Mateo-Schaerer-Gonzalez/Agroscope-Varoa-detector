@@ -9,6 +9,7 @@ if PROJECT_ROOT not in sys.path:
 from classes.detector import Detector
 from utils.tools import get_frames, convert_yolo_to_coords
 from classes.MiteManager import MiteManager
+from classes.Plotter import Plotter
 from utils.tools import read_counter, reset_counter, write_counter
 
 
@@ -24,8 +25,6 @@ def reanalyze_recording(results_base, num_per_plate, detector, frames_by_recordi
 
     # analysis
 
-
-
     for i, frames in enumerate(frames_by_recording):
         results_folder = os.path.join(reanalyze_path, f"recording{i+1}")
         os.makedirs(results_folder)
@@ -38,27 +37,35 @@ def reanalyze_recording(results_base, num_per_plate, detector, frames_by_recordi
         mites_detection=detector.result,
         frames=frames,
         name=name,
-        output_folder=results_folder,
-        reanalyze=0,
-        discobox_run=discobox_run,
-        recording_count= i + 1)
+        reanalyze=0)
 
-        stage.mite_variability(Ground_truth)
-        stage.draw(frames[0], thickness=2)
+        stage.update_mite_status(Ground_truth)
 
-        summary_data, max_diffs =stage.get_summary_data()
+        stage.save_data(recording_count= i+1)
 
 
-        stage.make_survival_graph(summary_data, max_diffs)
+        plotter = Plotter(stage=stage,
+                      output_folder=results_folder,
+                      discobox_run=discobox_run)
+        
+        plotter.save_frame0_detection(frames[0], thickness=2)
+
+
+        plotter.make_survival_graph()
 
         # save them to pdf
-        stage.create_recording_pdf()
+        plotter.create_recording_pdf(recording_count= i + 1)
+
         stage.save()
 
     # general summary:
-    stage.make_survival_time_graph()
+    plotter.make_survival_time_graph()
+    print(stage.data)
     reset_counter()
     stage.reset()
+
+    plotter.distribution_graph()
+
 
 def analyze_recording(results_base, num_per_plate, detector, frames, discobox_run, name, num_recordings, Ground_truth):
 
@@ -83,31 +90,38 @@ def analyze_recording(results_base, num_per_plate, detector, frames, discobox_ru
         name=name,
         output_folder=results_folder,
         reanalyze=0,
-        discobox_run=discobox_run,
-        recording_count = count
+    
     )
 
-    stage.mite_variability(Ground_truth)
-    stage.draw(frames[0], thickness=2)
+    stage.update_mite_status(Ground_truth)
+    
 
-    summary_data, max_diffs =stage.get_summary_data()
+    stage.save_data(recording_count=count)
 
 
-    stage.make_survival_graph(summary_data, max_diffs)
+    #make a plotter
+    plotter = Plotter(stage=stage,
+                      output_folder=results_folder,
+                      discobox_run=discobox_run)
+    
+    
+    plotter.save_frame0_detection(frames[0], thickness=2)
 
     # save them to pdf
-    stage.create_recording_pdf()
+    plotter.create_recording_pdf(recording_count = count)
+
+
+    plotter.distribution_graph()
 
     stage.save()
 
     if count >= num_recordings:
-        stage.make_survival_time_graph()
+        plotter.make_survival_time_graph()
+        print(stage.data)
         reset_counter()
         stage.reset()
 
        
-        
-
 def predict(folder_path, name, num_per_plate, reanalyze=False, discobox_run=False, num_recordings=2):
     detector = Detector()
     frames = get_frames(folder_path, discobox_run, reanalyze)

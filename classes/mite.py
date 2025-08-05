@@ -6,7 +6,7 @@ import csv
 import os
 
 class Mite:
-    def __init__(self, yolo_bbox, frames, threshold=5.0):
+    def __init__(self, yolo_bbox, frames):
         """
         Initialize a Mite object with YOLO bbox and image shape.
 
@@ -22,8 +22,8 @@ class Mite:
         self.roi_series = self.bbox.get_ROI(frames)
         self.assigned_rect = None
         self.alive = True
-        self.local_avg_diff = 0
-        self.max_diff  = 0
+        self.local_avg_diff = []
+        self.max_diff  = []
         self.local_radius = 5
 
 
@@ -35,7 +35,10 @@ class Mite:
         with open(filename, "r") as f:
             self.threshold = float(f.readline().strip())
 
-       
+    def update_ROI(self, frames):
+        self.roi_series = self.bbox.get_ROI(frames)
+
+
 
     def checkAlive(self, Ground_Truth):
         
@@ -65,15 +68,15 @@ class Mite:
 
         # Get top 3 pixel values in the patch
         top_3_vals = np.sort(local_patch.flatten())[-3:]
-        self.local_avg_diff = np.mean(top_3_vals)
+        self.local_avg_diff.append(np.mean(top_3_vals))
 
 
-        self.max_diff = np.max(pixel_diff_grey)
+        self.max_diff.append(np.max(pixel_diff_grey))
 
 
 
         # update alive status based on variability
-        self.alive = 0.8 * self.max_diff + 0.2 * self.local_avg_diff > self.threshold #above threshold is alive, below is dead
+        self.alive = 0.8 * self.max_diff[-1] + 0.2 * self.local_avg_diff[-1] > self.threshold #above threshold is alive, below is dead
         self.bbox.color = (0, 255, 0) if self.alive else (0, 0, 255)
 
         #save the data
@@ -89,12 +92,14 @@ class Mite:
             
 
                 # Write the new row
-                writer.writerow([Ground_Truth, f"{'alive' if self.alive else 'dead'}", self.max_diff, self.local_avg_diff])
+                writer.writerow([Ground_Truth, f"{'alive' if self.alive else 'dead'}", self.max_diff[-1], self.local_avg_diff[-1]])
                             
          
 
+        return self.alive, self.max_diff[-1] 
+    
+    
 
-        return self.alive, self.local_avg_diff #pixel variace across frames
     
     def draw(self, image, thickness=2, label=None):
         """

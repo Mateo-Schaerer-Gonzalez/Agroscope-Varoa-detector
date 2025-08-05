@@ -10,6 +10,7 @@ class TextReader:
         self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
         self.model.to(self.device)
         self.model.eval()
+        print(f'using: {self.device}')
 
     def read(self, image):
         """
