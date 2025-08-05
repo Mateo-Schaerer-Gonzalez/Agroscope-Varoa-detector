@@ -8,6 +8,8 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 import pandas as pd
 import cv2
+import math
+from classes.mite import Mite
 
 class Plotter:
     def __init__(self, stage, output_folder, discobox_run):
@@ -33,7 +35,9 @@ class Plotter:
         self.distribution_max_diff = os.path.join(general_summary_path, 'max_diff.png')
         self.distribution_max_local_diff = os.path.join(general_summary_path,'local_diff.png')
         self.distribution_data_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'variabilites.csv')
-   
+        self.by_mite_path = os.path.join(general_summary_path,'zones')
+        os.makedirs(self.by_mite_path, exist_ok=True)
+
     
     def make_survival_graph(self):
         summary_data = self.stage.data
@@ -173,5 +177,70 @@ class Plotter:
 
         cv2.imwrite(filename, image)
         print(f"Image saved to: {filename}")
+
+    def plot_variability_by_mite(self):
+
+        # Ensure data is sorted properly
+        df = self.stage.mite_data.sort_values(by=['zone ID', 'mite ID', 'recording'])
+
+        # Create zones folder if not already
+        os.makedirs(os.path.join(self.by_mite_path, "zones"), exist_ok=True)
+
+        # Set threshold and consistent y-limits
+        threshold = Mite.threshold
+        y_min = df[['max diff', 'local diff']].min().min() - 0.1
+        y_max = df[['max diff', 'local diff']].max().max() + 0.1
+
+        # Group by zone
+        zones = df['zone ID'].unique()
+
+        for zone in zones:
+            path = os.path.join(self.by_mite_path, "zones", f'{zone}.png')
+
+            zone_df = df[df['zone ID'] == zone]
+            mites = zone_df['mite ID'].unique()
+            num_mites = len(mites)
+
+            # Arrange in two columns
+            ncols = 2
+            nrows = math.ceil(num_mites / ncols)
+
+            fig, axes = plt.subplots(nrows=nrows, ncols=ncols, figsize=(14, 4 * nrows), sharex=True, sharey=True)
+            axes = axes.flatten()
+
+            fig.suptitle(f"Zone: {zone}", fontsize=18)
+
+            for i, mite_id in enumerate(mites):
+                ax = axes[i]
+                mite_df = zone_df[zone_df['mite ID'] == mite_id]
+
+                # Background shading
+                ax.axhspan(y_min, threshold, color='red', alpha=0.2)
+                ax.axhspan(threshold, y_max, color='green', alpha=0.2)
+
+                # Plot data
+                ax.plot(mite_df['recording'], mite_df['max diff'], marker='o', label='Max Diff')
+                ax.plot(mite_df['recording'], mite_df['local diff'], marker='x', label='Local Diff')
+
+                # Status color markers
+                statuses = mite_df['status'].values
+                for x, y, s in zip(mite_df['recording'], mite_df['max diff'], statuses):
+                    color = 'red' if s == 'dead' else 'green'
+                    ax.scatter(x, y, color=color, s=50, zorder=3)
+
+                ax.set_title(f"Mite: {mite_id}")
+                ax.set_ylabel("Diff")
+                ax.set_ylim(y_min, y_max)
+                ax.grid(True)
+                ax.legend()
+
+            # Hide unused subplots
+            for j in range(len(mites), len(axes)):
+                fig.delaxes(axes[j])
+
+            axes[-1].set_xlabel("Recording")
+            plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+            plt.savefig(path)
+            plt.close()
 
 

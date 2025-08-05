@@ -41,7 +41,7 @@ class Mite:
     def to_dict(self, recording_count):
         return {'mite ID': self.mite_id,
                 'zone ID': self.assigned_rect.zone_id,
-                'status': self.alive,
+                'status': 'alive' if self.alive else 'dead',
                 'max diff': self.max_diff,
                 'local diff': self.local_avg_diff,
                 'recording': recording_count}

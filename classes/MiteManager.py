@@ -217,6 +217,7 @@ class MiteManager:
 
         # Sort by recording and Zone
         self.data = self.data.sort_values(by=['Zone ID', 'recording'])
+        self.mite_data = self.mite_data.sort_values(by=['mite ID', 'recording'])
 
         
                 

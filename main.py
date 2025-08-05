@@ -60,11 +60,15 @@ def reanalyze_recording(results_base, num_per_plate, detector, frames_by_recordi
 
     # general summary:
     plotter.make_survival_time_graph()
+    #plotter.distribution_graph()
+    plotter.plot_variability_by_mite()
+
+
     print(stage.mite_data)
     reset_counter()
     stage.reset()
 
-    plotter.distribution_graph()
+   
 
 
 def analyze_recording(results_base, num_per_plate, detector, frames, discobox_run, name, num_recordings, Ground_truth):
@@ -117,6 +121,8 @@ def analyze_recording(results_base, num_per_plate, detector, frames, discobox_ru
 
     if count >= num_recordings:
         plotter.make_survival_time_graph()
+        plotter.plot_variability_by_mite()
+        
         print(stage.mite_data)
         reset_counter()
         stage.reset()
