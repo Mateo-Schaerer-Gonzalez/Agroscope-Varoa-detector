@@ -37,6 +37,7 @@ class MiteManager:
             self.img_size = (15,10)
             self.frame0 = None
             self.data = pd.DataFrame()
+            self.mite_data = pd.DataFrame()
             self.reloaded = False
         
 
@@ -150,17 +151,22 @@ class MiteManager:
 
 
     def update_mite_status(self, Ground_truth):
+        save = Ground_truth == 'alive' or Ground_truth == 'dead'
+
         for zone in self.zones:
             print(f"Zone {zone.zone_id} has {len(zone.mites)} mites.")
             
             for mite in zone.mites:
-                mite.checkAlive(Ground_truth)
-
+                mite.update_status()
     
+                if save:
+                    mite.save_with_ground_truth(Ground_truth)
+        
+
     def save_data(self, recording_count):
         # Step 1: Prepare the data
         summary_data = []
-        all_maxdiff = []
+        mite_data = []
 
         for zone in self.zones:
             if zone.zone_id == "EMPTY":
@@ -171,10 +177,7 @@ class MiteManager:
             dead = total - alive
             survival_pct = (alive / total * 100) if total > 0 else 0.0
 
-            # Collect variability values
-            for mite in zone.mites:
-                all_maxdiff.append(mite.max_diff[-1])
-
+          
             summary_data.append({
                 "Zone ID": zone.zone_id,
                 "Total Mites": total,
@@ -184,11 +187,20 @@ class MiteManager:
                 "recording": recording_count
             })
 
-        df = pd.DataFrame(summary_data)
+            # collect individual mite data
+            for mite in zone.mites:
+                mite_data.append(mite.to_dict(recording_count))
 
-        self.data = pd.concat([df, self.data], ignore_index=True)
 
 
+        df_summary = pd.DataFrame(summary_data)
+        df_mites = pd.DataFrame(mite_data)
+
+        self.data = pd.concat([df_summary, self.data], ignore_index=True)
+        self.mite_data = pd.concat([df_mites, self.mite_data], ignore_index=True)
+
+
+        #merge identicall labels
         self.data = (
             self.data
             .groupby(['Zone ID', 'recording'], as_index=False)
@@ -199,21 +211,16 @@ class MiteManager:
             })
         )
 
+        #recalculate survival rate after merge
+        self.data['Survival %'] = ((self.data['Alive Mites'] / self.data['Total Mites']) * 100).round(2)
 
-        self.data['Survival %'] = (self.data['Alive Mites'] / self.data['Total Mites']) * 100
 
-        # Optional rounding
-        self.data['Survival %'] = self.data['Survival %'].round(2)
-
-        # Sort for plotting or presentation
+        # Sort by recording and Zone
         self.data = self.data.sort_values(by=['Zone ID', 'recording'])
 
         
                 
-        self.max_diff = all_maxdiff
-
-
-        return self.data
+        return self.data, self.mite_data
 
 
 

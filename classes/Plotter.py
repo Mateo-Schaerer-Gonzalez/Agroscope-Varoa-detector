@@ -37,25 +37,20 @@ class Plotter:
     
     def make_survival_graph(self):
         summary_data = self.stage.data
-        all_maxdiff = self.stage.max_diff
-
-       
-        zone_labels = summary_data['Zone ID']
-    
-        survival_rates = summary_data['Survival %']
+        mite_data = self.stage.mite_data
 
         # Create a figure with 2 subplots side by side
         fig, axes = plt.subplots(1, 2, figsize=(12, 6))
 
         # Subplot 1: Histogram of max pixel difference
-        axes[0].hist(all_maxdiff, bins=20, color="steelblue", edgecolor="black")
+        axes[0].hist(mite_data['max diff'], bins=20, color="steelblue", edgecolor="black")
         axes[0].set_title("Distribution of Mite Max Pixel Difference")
         axes[0].set_xlabel("Max Pixel Difference")
         axes[0].set_ylabel("Frequency")
         axes[0].grid(True)
 
         # Subplot 2: Bar chart of survival rates
-        axes[1].bar(zone_labels, survival_rates, color="mediumseagreen", edgecolor="black")
+        axes[1].bar(summary_data['Zone ID'], summary_data['Survival %'], color="mediumseagreen", edgecolor="black")
         axes[1].set_title("Survival Rate by Zone")
         axes[1].set_xlabel("Zone ID")
         axes[1].set_ylabel("Survival %")
