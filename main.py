@@ -13,6 +13,7 @@ from classes.Plotter import Plotter
 from utils.tools import read_counter, reset_counter, write_counter
 
 
+
 def reanalyze_recording(results_base, num_per_plate, detector, frames_by_recording, discobox_run, name, Ground_truth):
     i = 1
     while True:
@@ -51,7 +52,7 @@ def reanalyze_recording(results_base, num_per_plate, detector, frames_by_recordi
         plotter.save_frame0_detection(frames[0], thickness=2)
 
 
-        plotter.make_survival_graph()
+        plotter.make_survival_graph( recording_number = i + 1)
 
         # save them to pdf
         plotter.create_recording_pdf(recording_count= i + 1)
@@ -62,9 +63,12 @@ def reanalyze_recording(results_base, num_per_plate, detector, frames_by_recordi
     plotter.make_survival_time_graph()
     #plotter.distribution_graph()
     plotter.plot_variability_by_mite()
+    
+    plotter.excel_summary_mites()
+    plotter.excel_summary_recordings()
 
 
-    print(stage.mite_data)
+    
     reset_counter()
     stage.reset()
 
@@ -111,19 +115,21 @@ def analyze_recording(results_base, num_per_plate, detector, frames, discobox_ru
     
     plotter.save_frame0_detection(frames[0], thickness=2)
 
-    # save them to pdf
-    plotter.create_recording_pdf(recording_count = count)
 
+    plotter.make_survival_graph(recording_number = count)
 
-    plotter.distribution_graph()
+        # save them to pdf
+    plotter.create_recording_pdf(recording_count= count)
 
+        
     stage.save()
 
     if count >= num_recordings:
         plotter.make_survival_time_graph()
         plotter.plot_variability_by_mite()
+        plotter.excel_summary_mites()
+        plotter.excel_summary_recordings()
         
-        print(stage.mite_data)
         reset_counter()
         stage.reset()
 

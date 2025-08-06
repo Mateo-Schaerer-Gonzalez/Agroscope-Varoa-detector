@@ -10,6 +10,12 @@ import pandas as pd
 import cv2
 import math
 from classes.mite import Mite
+from openpyxl.drawing.image import Image as XLImage
+
+
+from openpyxl import Workbook
+from openpyxl.styles import PatternFill
+from openpyxl.utils.dataframe import dataframe_to_rows
 
 class Plotter:
     def __init__(self, stage, output_folder, discobox_run):
@@ -26,7 +32,6 @@ class Plotter:
 
         general_summary_path = os.path.abspath(os.path.join(self.output_path, os.pardir))
 
-
         self.pdf_path = os.path.join(self.output_path, "recording.pdf")
         self.csv_path = os.path.join(self.output_path, "summary.csv")
         self.frame_path = os.path.join(self.output_path, "frame_0.jpg")
@@ -36,12 +41,19 @@ class Plotter:
         self.distribution_max_local_diff = os.path.join(general_summary_path,'local_diff.png')
         self.distribution_data_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'variabilites.csv')
         self.by_mite_path = os.path.join(general_summary_path,'zones')
+        self.excel_by_zones = os.path.join(self.by_mite_path, "mites.xlsx")
+        self.excel_by_recording = os.path.join(general_summary_path, "recordings_summary.xlsx")
         os.makedirs(self.by_mite_path, exist_ok=True)
 
     
-    def make_survival_graph(self):
+    def make_survival_graph(self, recording_number):
         summary_data = self.stage.data
         mite_data = self.stage.mite_data
+
+
+        # Filter both datasets by the given recording number
+        summary_data = summary_data[summary_data['recording'] == recording_number]
+        mite_data = mite_data[mite_data['recording'] == recording_number]
 
         # Create a figure with 2 subplots side by side
         fig, axes = plt.subplots(1, 2, figsize=(12, 6))
@@ -52,6 +64,7 @@ class Plotter:
         axes[0].set_xlabel("Max Pixel Difference")
         axes[0].set_ylabel("Frequency")
         axes[0].grid(True)
+        axes[0].axvline(Mite.threshold, color='red', linestyle='--', linewidth=2)
 
         # Subplot 2: Bar chart of survival rates
         axes[1].bar(summary_data['Zone ID'], summary_data['Survival %'], color="mediumseagreen", edgecolor="black")
@@ -222,17 +235,14 @@ class Plotter:
                 ax.plot(mite_df['recording'], mite_df['max diff'], marker='o', label='Max Diff')
                 ax.plot(mite_df['recording'], mite_df['local diff'], marker='x', label='Local Diff')
 
-                # Status color markers
-                statuses = mite_df['status'].values
-                for x, y, s in zip(mite_df['recording'], mite_df['max diff'], statuses):
-                    color = 'red' if s == 'dead' else 'green'
-                    ax.scatter(x, y, color=color, s=50, zorder=3)
+              
 
                 ax.set_title(f"Mite: {mite_id}")
                 ax.set_ylabel("Diff")
                 ax.set_ylim(y_min, y_max)
                 ax.grid(True)
                 ax.legend()
+            print(f"plotting zone: {zone}")
 
             # Hide unused subplots
             for j in range(len(mites), len(axes)):
@@ -242,5 +252,97 @@ class Plotter:
             plt.tight_layout(rect=[0, 0.03, 1, 0.95])
             plt.savefig(path)
             plt.close()
+
+    def excel_summary_recordings(self):
+        summary_df = self.stage.data
+        wb = Workbook()
+        wb.remove(wb.active)
+
+        recordings = sorted(summary_df['recording'].unique())
+
+        # add overview:
+        ws = wb.create_sheet(title="Overview")
+        try:
+            img = XLImage(self.time_survival_path)
+            img.anchor = 'A1'  # position on overview sheet, adjust as needed
+            ws.add_image(img)
+        except Exception as e:
+            print(f"Failed to add overview image: {e}")
+
+        for rec in recordings:
+            rec_df = summary_df[summary_df['recording'] == rec]
+
+            ws = wb.create_sheet(title=f"Recording {rec}")
+
+            for r_idx, row in enumerate(dataframe_to_rows(rec_df, index=False, header=True), 1):
+                for c_idx, value in enumerate(row, 1):
+                    ws.cell(row=r_idx, column=c_idx, value=value)
+            
+            # add image
+            try:
+                path = os.path.join(os.path.dirname(self.excel_by_recording), f'recording{rec}', 'survival.png' )
+                print(path)
+                img = XLImage(path)
+                img.anchor = 'H1'
+                ws.add_image(img)
+
+            except Exception as e:
+                print("adding image failed")
+
+        path = self.excel_by_recording  # define this path in your class
+        wb.save(path)
+        print(f"Summary Excel with sheets per recording saved to {path}")
+
+    
+
+    def excel_summary_mites(self):
+         # Define color fills
+        green_fill = PatternFill(start_color="C6EFCE", end_color="C6EFCE", fill_type="solid")  # Light green
+        red_fill = PatternFill(start_color="FFC7CE", end_color="FFC7CE", fill_type="solid")    # Light red
+
+        df = self.stage.mite_data
+
+        # Get unique zones
+        zones = df['zone ID'].unique()
+
+        # Create a new Excel workbook
+        wb = Workbook()
+        # Remove the default sheet
+        wb.remove(wb.active)
+
+        for zone in zones:
+            zone_df = df[df['zone ID'] == zone]
+            
+            # Pivot so rows = mite ID, cols = recording, values = status
+            pivot = zone_df.pivot(index='mite ID', columns='recording', values='status')
+
+            # Add a new worksheet for the zone
+            ws = wb.create_sheet(title=str(zone))
+
+            # Write headers and data
+            for r_idx, row in enumerate(dataframe_to_rows(pivot.reset_index(), index=False, header=True), 1):
+                for c_idx, value in enumerate(row, 1):
+                    cell = ws.cell(row=r_idx, column=c_idx, value=value)
+                    if r_idx > 1 and c_idx > 1:  # Only data cells (skip headers)
+                        if value == 'alive':
+                            cell.fill = green_fill
+                        elif value == 'dead':
+                            cell.fill = red_fill
+
+            img_path = os.path.join(self.by_mite_path, "zones", f"{zone}.png")
+            if os.path.exists(img_path):
+                img = XLImage(img_path)
+                img.width = img.width * 0.5
+                img.height = img.height * 0.5
+
+                img.anchor = "H2"  # Adjust as needed (e.g., "H2" puts image starting at column H row 2)
+                ws.add_image(img)
+            else:
+                print(f"Warning: Image for zone '{zone}' not found at {img_path}")
+
+        
+        wb.save(self.excel_by_zones)
+        print(f"Excel summary with zone-wise sheets saved to {self.excel_by_zones}")
+            
 
 
