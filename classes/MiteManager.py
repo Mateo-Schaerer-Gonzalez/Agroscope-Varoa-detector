@@ -32,7 +32,8 @@ class MiteManager:
             }
 
             self.get_zones(coordinate_file) # get the zones from the coordinate file
-            self.getMites(mites_detection, self.frames, self.zones)  # get the mites from the detection results and frames
+            self.getMites(mites_detection)  # get the mites from the detection results and frames
+            self.get_labels() # get labels where there are mites
             self.img_size = (15,10)
             self.frame0 = None
             self.data = pd.DataFrame()
@@ -79,8 +80,7 @@ class MiteManager:
     def get_zones(self,coordinate_file):
         self.load_coordinate_file(coordinate_file)
     
-        textReader = TextReader() #load the text reader
-        print("textReader loaded...")
+        
 
         with open(self.coordinate_file, 'r') as f:
             for line in f:
@@ -102,17 +102,11 @@ class MiteManager:
                     for miteZone in self.zones:
                         if textZone in miteZone:
                             textZone.parent_rect = miteZone
-                            img = textZone.get_ROI(self.frames)[0]
-                            
-                            img_PIL = Image.fromarray(img).convert("RGB")  # Get the image from the ROI
-                            textZone.text = textReader.read(img_PIL)
-                            
-
                             miteZone.add_text_zone(textZone)
                             break
 
 
-    def getMites(self, result, frames, zones):
+    def getMites(self, result):
         """
         Extract mites from detection results and frames.
         
@@ -129,10 +123,10 @@ class MiteManager:
        
         worked = False
         for i, box in enumerate(boxes):
-            mite = Mite(box, frames)
+            mite = Mite(box, self.frames)
             
-            for zone in zones:
-                if mite.bbox in zone:
+            for zone in self.zones:
+                if mite.bbox in zone and all(mite.bbox not in text_zone for text_zone in zone.text_zones):
                     worked = zone.assign_mites(mite)
                     break
             if worked:
@@ -141,6 +135,23 @@ class MiteManager:
      
         print("got mites:", len(boxes))
         print("assigned mites:", assigned)
+
+    def get_labels(self):
+        textReader = TextReader() #load the text reader
+        print("textReader loaded...")
+        for zone in self.zones:
+            if zone.mites: #if it has mites read the label
+                for text_zone in zone.text_zones:
+                    print(text_zone)
+                    img = text_zone.get_ROI(self.frames)[0]
+                            
+                    img_PIL = Image.fromarray(img).convert("RGB")  # Get the image from the ROI
+                    text_zone.text = textReader.read(img_PIL)
+
+                    #update the zone id aswell
+                    zone.zone_id = text_zone.text
+
+
 
 
     def update_mites(self, frames):
@@ -192,32 +203,43 @@ class MiteManager:
                 mite_data.append(mite.to_dict(recording_count))
 
 
+        if summary_data:
+            df_summary = pd.DataFrame(summary_data)
+            self.data = pd.concat([df_summary, self.data], ignore_index=True)
+             #merge identicall labels
+            self.data = (
+                self.data
+                .groupby(['Zone ID', 'recording'], as_index=False)
+                .agg({
+                    'Total Mites': 'sum',
+                    'Alive Mites': 'sum',
+                    'Dead Mites': 'sum',
+                })
+            )
 
-        df_summary = pd.DataFrame(summary_data)
-        df_mites = pd.DataFrame(mite_data)
-
-        self.data = pd.concat([df_summary, self.data], ignore_index=True)
-        self.mite_data = pd.concat([df_mites, self.mite_data], ignore_index=True)
-
-
-        #merge identicall labels
-        self.data = (
-            self.data
-            .groupby(['Zone ID', 'recording'], as_index=False)
-            .agg({
-                'Total Mites': 'sum',
-                'Alive Mites': 'sum',
-                'Dead Mites': 'sum',
-            })
-        )
-
-        #recalculate survival rate after merge
-        self.data['Survival %'] = ((self.data['Alive Mites'] / self.data['Total Mites']) * 100).round(2)
+            #recalculate survival rate after merge
+            self.data['Survival %'] = ((self.data['Alive Mites'] / self.data['Total Mites']) * 100).round(2)
 
 
-        # Sort by recording and Zone
-        self.data = self.data.sort_values(by=['Zone ID', 'recording'])
-        self.mite_data = self.mite_data.sort_values(by=['mite ID', 'recording'])
+            # Sort by recording and Zone
+            self.data = self.data.sort_values(by=['Zone ID', 'recording'])
+           
+
+        else:
+            print("found no mites..")
+        if mite_data:
+
+
+            df_mites = pd.DataFrame(mite_data)
+
+        
+            self.mite_data = pd.concat([df_mites, self.mite_data], ignore_index=True)
+            self.mite_data = self.mite_data.sort_values(by=['mite ID', 'recording'])
+        else:
+            print("NO Mite data found")
+
+
+       
 
         
                 

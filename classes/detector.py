@@ -25,7 +25,7 @@ class Detector:
             image,
             imgsz=1024,  #fine tuned uses 512 / 6016
             max_det=2000,
-            conf=0.3,
+            conf=0.1,
             iou=0.5,
             save=False,
             show_labels=False,

@@ -68,19 +68,12 @@ def reanalyze_recording(results_base, num_per_plate, detector, frames_by_recordi
 
 
     
-    reset_counter()
     stage.reset()
 
    
 
 
-def analyze_recording(results_base, num_per_plate, detector, frames, discobox_run, name, num_recordings, Ground_truth):
-
-    # count how many recordings have been made
-    count = read_counter()
-    count += 1
-    write_counter(count)
-    print("current count:", count)
+def analyze_recording(results_base, num_per_plate, detector, frames, discobox_run, name, num_recordings, Ground_truth, count, time_between_recording):
 
 
     results_folder = os.path.join(results_base, "results", f"recording{count}")
@@ -106,7 +99,8 @@ def analyze_recording(results_base, num_per_plate, detector, frames, discobox_ru
     #make a plotter
     plotter = Plotter(stage=stage,
                       output_folder=results_folder,
-                      discobox_run=discobox_run)
+                      discobox_run=discobox_run,
+                      time_between_recordings = time_between_recording)
     
     
     plotter.save_frame0_detection(frames[0], thickness=2)
@@ -125,12 +119,10 @@ def analyze_recording(results_base, num_per_plate, detector, frames, discobox_ru
         plotter.plot_variability_by_mite()
         plotter.excel_summary_mites()
         plotter.excel_summary_recordings()
-        
-        reset_counter()
         stage.reset()
 
        
-def predict(folder_path, name, num_per_plate, reanalyze=False, discobox_run=False, num_recordings=2):
+def predict(folder_path, name, num_per_plate, reanalyze=False, discobox_run=False, num_recordings=1, count=1, time_between_rec=5):
     detector = Detector()
     frames = get_frames(folder_path, discobox_run, reanalyze)
 
@@ -149,10 +141,10 @@ def predict(folder_path, name, num_per_plate, reanalyze=False, discobox_run=Fals
         reanalyze_recording(results_base, num_per_plate, detector, frames, discobox_run, name, Ground_truth)
 
     else:
-        analyze_recording(results_base, num_per_plate, detector, frames, discobox_run, name, num_recordings, Ground_truth)
+        analyze_recording(results_base, num_per_plate, detector, frames, discobox_run, name, num_recordings, Ground_truth, count, time_between_rec)
 
     
     # plot variablitiy distribution collected so far
     # Load the CSV file
 
-predict("Datasets/two_rec_test", "test", 1, reanalyze=False)
+predict("Datasets/long_run_alive_5_recordings/", "test", num_per_plate=2, reanalyze=False)
