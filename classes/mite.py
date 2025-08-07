@@ -35,6 +35,7 @@ class Mite:
         self.assigned_rect = None
         self.alive = True
         self.local_avg_diff = 0
+        self.activity = 0
         self.max_diff  = 0
 
   
@@ -58,6 +59,9 @@ class Mite:
             raise ValueError("ROI series is not set. Call add_ROI() first.")
 
         # Get pixel-wise range across the stack
+
+
+
         pixel_diff_grey = np.mean(self.roi_series.max(axis=0) - self.roi_series.min(axis=0), axis = -1)
 
 
@@ -80,7 +84,7 @@ class Mite:
         self.max_diff = np.max(pixel_diff_grey)
 
         # update alive status based on variability
-        self.alive = 0.8 * self.max_diff + 0.2 * self.local_avg_diff > Mite.threshold #above threshold is alive, below is dead
+        self.alive = self.local_avg_diff > Mite.threshold #above threshold is alive, below is dead
         self.bbox.color = (0, 255, 0) if self.alive else (0, 0, 255)
 
        
@@ -100,7 +104,7 @@ class Mite:
             writer = csv.writer(file)
 
             # Write the new row
-            writer.writerow([Ground_Truth, f"{'alive' if self.alive else 'dead'}", self.max_diff, self.local_avg_diff])
+            writer.writerow([Ground_Truth, f"{'alive' if self.alive else 'dead'}", self.max_diff, self.local_avg_diff, self.activity])
 
                 
     def draw(self, image):
@@ -108,4 +112,32 @@ class Mite:
         Draw this mite's bounding box on the given image.
         """
         self.bbox.draw(image, thickness=0.1, font_scale=0.1)
+
+    
+
+
+    def update_status_severin(self):
+        # Convert to grayscale + denoise in-place
+       
+
+        # Compute accumulated absolute difference image
+        diff_accum = np.zeros_like(self.roi_series[0], dtype=np.uint8)
+        for i in range(1, self.roi_series.shape[0]):
+            diff = cv2.absdiff(self.roi_series[0], self.roi_series[i])
+            diff_accum = cv2.bitwise_or(diff, diff_accum)
+
+        # Calculate overall activity score (max pixel in diff_accum)
+        activity_score = np.max(diff_accum)
+
+        # Store for debugging/analysis
+        self.activity = activity_score
+
+        # Alive decision using threshold on activity score only
+        self.alive = activity_score > Mite.threshold
+
+        # Update bounding box color
+        self.bbox.color = (0, 255, 0) if self.alive else (0, 0, 255)
+
+        return self.alive
+
 

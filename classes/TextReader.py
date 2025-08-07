@@ -2,6 +2,7 @@ import torch
 from transformers import TrOCRProcessor, VisionEncoderDecoderModel
 import numpy as np
 import cv2
+import string
 
 class TextReader:
     def __init__(self, model_name="microsoft/trocr-large-handwritten", device=None):
@@ -40,12 +41,23 @@ class TextReader:
             probs.append(token_prob)
 
         avg_confidence = sum(probs) / len(probs) if probs else 0
-        CONFIDENCE_THRESHOLD = 0.7
+        CONFIDENCE_THRESHOLD = 0.6
 
         if avg_confidence < CONFIDENCE_THRESHOLD:
             return "EMPTY"
+        
         else:
-            print(generated_text)
-            return generated_text.strip()
+            #clean the text
+            cleaned = self.clean_text(generated_text)
+            print(cleaned)
+            return cleaned
+        
+
+
+    def clean_text(sel,text):
+        # Convert to lowercase
+        text = text.lower()
+        # Remove trailing punctuation and whitespace
+        return text.rstrip(string.punctuation + " ")
 
 

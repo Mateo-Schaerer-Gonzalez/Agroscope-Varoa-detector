@@ -155,3 +155,4 @@ def write_counter(count):
 def reset_counter():
     if os.path.exists(COUNTER_FILE):
         os.remove(COUNTER_FILE)
+

@@ -37,8 +37,7 @@ def reanalyze_recording(results_base, num_per_plate, detector, frames_by_recordi
         coordinate_file=f"Zoning/coordinates{num_per_plate}.txt",
         mites_detection=detector.result,
         frames=frames,
-        name=name,
-        reanalyze=0)
+        name=name)
 
         stage.update_mite_status(Ground_truth)
 
@@ -95,10 +94,7 @@ def analyze_recording(results_base, num_per_plate, detector, frames, discobox_ru
         coordinate_file=f"Zoning/coordinates{num_per_plate}.txt",
         mites_detection=detector.result,
         frames=frames,
-        name=name,
-        output_folder=results_folder,
-        reanalyze=0,
-    
+        name=name
     )
 
     stage.update_mite_status(Ground_truth)
@@ -159,4 +155,4 @@ def predict(folder_path, name, num_per_plate, reanalyze=False, discobox_run=Fals
     # plot variablitiy distribution collected so far
     # Load the CSV file
 
-predict("Datasets/dead5", "test", 1, reanalyze=True)
+predict("Datasets/two_rec_test", "test", 1, reanalyze=False)

@@ -11,7 +11,7 @@ class MiteManager:
     
 
     def __init__(self, mites_detection, 
-                 frames, coordinate_file, name, reanalyze=0):
+                 frames, coordinate_file, name):
         
         print("initializing stage..")
         base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -33,7 +33,6 @@ class MiteManager:
 
             self.get_zones(coordinate_file) # get the zones from the coordinate file
             self.getMites(mites_detection, self.frames, self.zones)  # get the mites from the detection results and frames
-            self.reanalyze = reanalyze
             self.img_size = (15,10)
             self.frame0 = None
             self.data = pd.DataFrame()
@@ -158,6 +157,7 @@ class MiteManager:
             
             for mite in zone.mites:
                 mite.update_status()
+                mite.update_status_severin()
     
                 if save:
                     mite.save_with_ground_truth(Ground_truth)
