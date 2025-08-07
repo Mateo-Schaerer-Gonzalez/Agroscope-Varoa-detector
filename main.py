@@ -147,4 +147,4 @@ def predict(folder_path, name, num_per_plate, reanalyze=False, discobox_run=Fals
     # plot variablitiy distribution collected so far
     # Load the CSV file
 
-predict("Datasets/long_run_alive_5_recordings/", "test", num_per_plate=2, reanalyze=False)
+predict("Datasets/time_test/", "test", num_per_plate=2, reanalyze=False)

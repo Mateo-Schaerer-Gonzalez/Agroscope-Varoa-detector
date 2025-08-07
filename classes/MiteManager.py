@@ -33,7 +33,6 @@ class MiteManager:
 
             self.get_zones(coordinate_file) # get the zones from the coordinate file
             self.getMites(mites_detection)  # get the mites from the detection results and frames
-            self.get_labels() # get labels where there are mites
             self.img_size = (15,10)
             self.frame0 = None
             self.data = pd.DataFrame()
@@ -136,7 +135,8 @@ class MiteManager:
         print("got mites:", len(boxes))
         print("assigned mites:", assigned)
 
-    def get_labels(self):
+
+        # get the labels of the mites
         textReader = TextReader() #load the text reader
         print("textReader loaded...")
         for zone in self.zones:
@@ -150,6 +150,7 @@ class MiteManager:
 
                     #update the zone id aswell
                     zone.zone_id = text_zone.text
+        
 
 
 

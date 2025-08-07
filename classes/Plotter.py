@@ -22,19 +22,30 @@ class Plotter:
 
         self.stage = stage
         base_dir = os.path.dirname(os.path.abspath(__file__))
+             # set the outputfolder
+        if discobox_run:
+            # get the output path
+            self.output_path = os.path.abspath(os.path.join(base_dir, "..",  "..", output_folder))
+        else:
+            self.output_path = os.path.abspath(os.path.join(base_dir,"..",  output_folder))
+
+
+        general_summary_path = os.path.abspath(os.path.join(self.output_path, os.pardir))
 
         #get the time between recording from txt
-        time_file_path = os.path.join(output_folder, "time_between_recording.txt")
+        time_file_path = os.path.join(general_summary_path, os.pardir, "time_between_recording.txt")
+      
 
         # Read the time value
         if time_between_recordings != 0:
-            self.time_between_recording = time_between_recordings
+            self.time_between_recording = time_between_recordings / 60
             # write it to file
             with open(time_file_path, "w") as f:
-                f.write(str(time_between_recordings))
+                f.write(str(self.time_between_recording))
         else:
 
             try:
+                print("looking for time  in:", time_file_path)
                 with open(time_file_path, 'r') as f:
                     content = f.read().strip()
                     self.time_between_recording = float(content)
@@ -42,14 +53,7 @@ class Plotter:
                 print("file not found setting")
                 self.time_between_recording = 1
 
-        # set the outputfolder
-        if discobox_run:
-            # get the output path
-            self.output_path = os.path.abspath(os.path.join(base_dir, "..",  "..", output_folder))
-        else:
-            self.output_path = os.path.abspath(os.path.join(base_dir,"..",  output_folder))
-
-        general_summary_path = os.path.abspath(os.path.join(self.output_path, os.pardir))
+        
 
         self.pdf_path = os.path.join(self.output_path, "recording.pdf")
         self.csv_path = os.path.join(self.output_path, "summary.csv")
